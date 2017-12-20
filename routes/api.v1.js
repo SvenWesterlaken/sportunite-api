@@ -11,5 +11,9 @@ router.all('*', passport.authenticate('jwt', { session: false }));
 
 //Rest van de api endpoints met authentication
 
+//User profile endpoints
+router.get('/users/:id?', user.read);
+router.put('/users/:id', user.update);
+router.delete('/users/:id', user.delete);
 
 module.exports = router;
