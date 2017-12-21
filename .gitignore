@@ -131,3 +131,9 @@ fabric.properties
 .idea/sonarlint
 
 # End of https://www.gitignore.io/api/git,node,webstorm
+.idea/jsLibraryMappings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/sportunite-api.iml
+.idea/vcs.xml
+.idea/inspectionProfiles/Project_Default.xml
