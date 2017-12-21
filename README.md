@@ -20,3 +20,9 @@ and use it like this *for example*:
 ```Shell
 npm start
 ```
+
+#### Geocoding Google API Key
+*Test Project*
+```Test Project
+AIzaSyBmjTbTi0rGZeXgTZ3njyCHgLwtMoOU1_s
+```
