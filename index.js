@@ -21,7 +21,7 @@ if(result.error) {
 }
 
 
-db.start();
+process.env.NODE_ENV !== 'test' ? db.start() : null;
 
 app.use(middleware.protectionHeaders);
 app.use(middleware.preflightHandler);
