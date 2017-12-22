@@ -10,7 +10,7 @@ const ExtractJwt = passport_jwt.ExtractJwt;
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: env.secretkey
-}
+};
 
 passport.use(new JwtStrategy(options, (payload, done) => {
   User.findById(payload.sub).catch((err) => done(err, false)).then((user) => {
