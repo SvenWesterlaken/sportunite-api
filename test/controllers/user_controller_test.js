@@ -68,7 +68,25 @@ describe('User login', () => {
 });
 
 describe('User registration', () => {
-    let credentials = { email: 'test@test.com', password: 'test1234' };
+    let credentials = {
+        email: 'test@test.com',
+        password: 'test1234',
+        firstname: 'tester1,',
+        lastname: 'testing' ,
+        birth: 1993-6-24,
+        gender: 'male',
+        address: {
+            street: 'Hinderstraat',
+            number: 1,
+            postal_code: '3077DA',
+            city: 'Rotterdam',
+            state: 'Zuid-Holland',
+            country: 'Nederland',
+            geometry: {
+                coordinates: [4.567827, 51.886838]
+            }
+        }
+    }
 
     it('Valid registration', (done) => {
         chai.request(server)
@@ -106,7 +124,7 @@ describe('User registration', () => {
                 expect(res.body).to.include({error: "Invalid Registration Credentials"});
                 done();
             });
-    });
+    })
 });
 
 describe('Token validation', (done) => {
