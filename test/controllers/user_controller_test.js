@@ -127,7 +127,52 @@ describe('User registration', () => {
 });
 
 describe('Get all Users', () => {
-    it('Get to /api/users/:id?')
+    let credentials = {
+        email: 'test@test11.com',
+        password: 'test1234',
+        firstname: '22131tester1,',
+        lastname: 'testing' ,
+        birth: 1993-6-24,
+        gender: 'male',
+        address: {
+            street: 'Hinderstraat',
+            number: 1,
+            postal_code: '3077DA',
+            city: 'Rotterdam',
+            state: 'Zuid-Holland',
+            country: 'Nederland',
+            geometry: {
+                coordinates: [4.567827, 51.886838]
+            }
+        }
+    }
+
+    let credentials2 = {
+        email: '12121test@test11.com',
+        password: '2test1234',
+        firstname: 'tester1,',
+        lastname: 'testing' ,
+        birth: 1993-6-24,
+        gender: 'male',
+        address: {
+            street: 'Hinderstraat',
+            number: 1,
+            postal_code: '3077DA',
+            city: 'Rotterdam',
+            state: 'Zuid-Holland',
+            country: 'Nederland',
+            geometry: {
+                coordinates: [4.567827, 51.886838]
+            }
+        }
+    }
+
+    it('Get to /api/users/:id?', (done) => {
+        chai.request(server)
+            .post('/api/v1/reqister')
+            .send(credentials)
+            .send(credentials2)
+    })
 
 });
 
