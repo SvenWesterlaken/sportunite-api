@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const _ = require('lodash');
 const auth = require('../auth/token');
 const neo4j = require('../db/neo4j');
 const objectId = require('mongodb').ObjectID;
@@ -12,8 +13,7 @@ register(req, res, next) {
 
   let body = req.body;
 
-  if (body) {
-
+  if (!_.isEmpty(body)) {
       User.findOne({email: body.email}).catch(err => next(err)).then(user => {
 
           if (!user) {
@@ -23,16 +23,11 @@ register(req, res, next) {
                   user.password = hash;
                   return new User(user);
               }).then(user => {
-                  user.save().catch(err => {
-                    console.log('sdsda');
-                      next(err)
-                  }).then(user => {
-                      if (user) {
-                          neo4j.run('CREATE (u:User {id: {id}}) RETURN u', {id: user._id.toString()}).catch(err => next(err)).then(result => {
-                              res.status(201).json({msg: "User successfully created"});
-                              neo4j.close();
-                          })
-                      }
+                  user.save().catch(err => next(err)).then(user => {
+                      neo4j.run('CREATE (u:User {id: {id}}) RETURN u', {id: user._id.toString()}).catch(err => next(err)).then(result => {
+                          res.status(201).json({msg: "User successfully created"});
+                          neo4j.close();
+                      })
                   });
               })
           } else {
@@ -44,7 +39,6 @@ register(req, res, next) {
   }else {
       res.status(400).json({error: "Invalid Registration Credentials"});
   }
-
 },
 
 login(req, res, next) {

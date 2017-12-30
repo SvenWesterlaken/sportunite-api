@@ -126,6 +126,11 @@ describe('User registration', () => {
     })
 });
 
+describe('Get all Users', () => {
+    it('Get to /api/users/:id?')
+
+});
+
 // describe('Token validation', (done) => {
 //     const credentials = { email: 'test@test.com', password: 'test1234' };
 //     let clock;
