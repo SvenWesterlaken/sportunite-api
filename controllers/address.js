@@ -38,6 +38,7 @@ module.exports = {
           if(!address) {
             res.status(404).send({error: "No address with this suffix"});
           } else {
+            
             const returnObject = {
               street: address.street,
               number: address.number,
