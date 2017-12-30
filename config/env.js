@@ -1,7 +1,17 @@
+const dotenv = require('dotenv');
+
+result = dotenv.config();
+
+if (result.error) {
+  throw result.error;
+}
+
+
 const env = {
   port: process.env.PORT || 8080,
   allowOrigin: process.env.ALLOW_ORIGIN || '*',
-  secretkey: process.env.DB_SECRET_KEY || "secretsportunite-app-510783"
+  secretkey: process.env.DB_SECRET_KEY || "secretsportunite-app-510783",
+  postcodeApiKey: process.env.POSTCODE_API_KEY || ""
 }
 
 env.mongo = {

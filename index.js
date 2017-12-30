@@ -1,7 +1,6 @@
 const express = require('express');
 const parser = require('body-parser');
 const passport = require('passport');
-const dotenv = require('dotenv');
 
 const config = require('./config/env');
 const middleware = require('./config/middleware');
@@ -11,15 +10,6 @@ const api_v1 = require('./routes/api.v1');
 const basic = require('./controllers/basic');
 
 const app = express();
-
-result = dotenv.config();
-
-if(result.error) {
-  throw result.error;
-} else {
-  console.log(result.parsed);
-}
-
 
 process.env.NODE_ENV !== 'test' ? db.start() : null;
 

@@ -3,13 +3,14 @@ const router = express.Router();
 const passport = require('../auth/passport');
 
 const user = require('../controllers/user');
+const address = require('../controllers/address');
 
 router.post('/register', user.register);
 router.post('/login', user.login);
 
 router.all('*', passport.authenticate('jwt', { session: false }));
 
-//Rest van de api endpoints met authentication
+router.post('/address', address.addressMatch);
 
 
 module.exports = router;
