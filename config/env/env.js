@@ -27,7 +27,7 @@ env.mongo = {
 
 env.neo4j = {
   username: process.env.NEO_USER || 'neo4j',
-  password: process.env.NEO_PASS || 'admin',
+  password: process.env.NEO_PASS || 'password',
   url: process.env.NEO_URL || 'bolt://127.0.0.1:7687'
 }
 
