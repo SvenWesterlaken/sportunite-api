@@ -5,4 +5,4 @@ const googleMapsClient = require('@google/maps').createClient({
     key: 'AIzaSyBmjTbTi0rGZeXgTZ3njyCHgLwtMoOU1_s'
 });
 
-export module.exports = googleMapsClient;
+module.exports = googleMapsClient;

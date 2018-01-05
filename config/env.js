@@ -11,7 +11,7 @@ const env = {
   port: process.env.PORT || 8080,
   allowOrigin: process.env.ALLOW_ORIGIN || '*',
   secretkey: process.env.DB_SECRET_KEY || "secretsportunite-app-510783",
-  postcodeApiKey: process.env.POSTCODE_API_KEY || ""
+  postcodeApiKey: process.env.POSTCODE_API_KEY || "7fZyozww3m2zMqd3jvtcC4VSsfvQspUl5QYP54J1"
 }
 
 env.mongo = {

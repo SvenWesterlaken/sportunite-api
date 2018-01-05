@@ -49,7 +49,7 @@ module.exports = {
               coordinates: address.geo.center.wgs84.coordinates
             }
 
-            res.send(returnObject);
+            res.status(200).send(returnObject);
           }
         }
       });
