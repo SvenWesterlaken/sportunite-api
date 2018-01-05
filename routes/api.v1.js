@@ -8,10 +8,11 @@ const sportevent = require('../controllers/sportevent');
 
 router.post('/register', user.register);
 router.post('/login', user.login);
+router.post('/address', address.addressMatch);
 
 router.all('*', passport.authenticate('jwt', { session: false }));
 
-router.post('/address', address.addressMatch);
+
 
 router.post('/sportevents', sportevent.add);
 
