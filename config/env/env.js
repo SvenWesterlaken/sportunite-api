@@ -10,7 +10,7 @@ const env = {
   port: process.env.PORT || 8080,
   allowOrigin: process.env.ALLOW_ORIGIN || '',
   secretkey: process.env.DB_SECRET_KEY || "secretsportunite-app-510783",
-  postcodeApiKey: process.env.POSTCODE_API_KEY || "7fZyozww3m2zMqd3jvtcC4VSsfvQspUl5QYP54J1"
+  postcodeApiKey: process.env.POSTCODE_API_KEY || ""
 }
 
 env.mongo = {
@@ -27,7 +27,7 @@ env.mongo = {
 
 env.neo4j = {
   username: process.env.NEO_USER || 'neo4j',
-  password: process.env.NEO_PASS || 'admin',
+  password: process.env.NEO_PASS || 'password',
   url: process.env.NEO_URL || 'bolt://127.0.0.1:7687'
 }
 

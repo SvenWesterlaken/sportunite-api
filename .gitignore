@@ -138,3 +138,5 @@ fabric.properties
 .idea/vcs.xml
 .idea/inspectionProfiles/Project_Default.xml
 .idea/watcherTasks.xml
+
+.idea

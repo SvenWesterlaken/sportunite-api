@@ -29,6 +29,7 @@
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
+    "mongodb": "^3.0.0-rc0",
     "mongoose": "^4.13.7",
     "neo4j-driver": "^1.5.1",
     "passport": "^0.4.0",
