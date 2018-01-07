@@ -7,9 +7,7 @@ const user = require('../controllers/user');
 router.post('/register', user.register);
 router.post('/login', user.login);
 
-router.all('*', passport.authenticate('jwt', { session: false }));
-
-//Rest van de api endpoints met authentication
+router.all('*', passport.authenticate('jwt', {session: false}));
 
 //User profile endpoints
 router.get('/users/:id?', user.read);
