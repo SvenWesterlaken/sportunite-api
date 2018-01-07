@@ -24,18 +24,20 @@ before((done) => {
 
 beforeEach((done) => {
     const { users } = mongoose.connection.collections;
-    users.drop(() => {});
+    users.drop(() => {
+        session
+            .run(
+                "MATCH (n) " +
+                "OPTIONAL MATCH (n)-[r]-() " +
+                "DELETE n,r "
+            )
+            .then(() => {
+                console.log('testdb: all neo4j nodes + r have been dropped');
+                done();
+            })
+            .catch((error) => console.log(error));
+    });
 
-    session
-        .run(
-            "MATCH (n) " +
-            "OPTIONAL MATCH (n)-[r]-() " +
-            "DELETE n,r "
-        )
-        .then(() => {
-            console.log('testdb: all neo4j nodes + r have been dropped');
-            done();
-        })
-        .catch((error) => console.log(error));
+
 
 });
