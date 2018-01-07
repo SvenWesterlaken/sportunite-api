@@ -119,14 +119,25 @@ module.exports = {
         const userId = req.params.id;
 
         if (objectId.isValid(userId)) {
-          User.findByIdAndRemove(userId)
-            .then((userDb) => {
-              if (userDb) {
-                res.status(200).send(userDb);
-              } else {
-                res.status(204).json({error: "User not found"});
-              }
-            }).catch((err) => next(err));
+
+            neo4j
+                .run(
+                    "MATCH (u:User{id: {idParam}})" +
+                    "OPTIONAL MATCH (u)-[rel]-(friend:User)" +
+                    "DELETE rel, u"
+                )
+                .then(() => {
+                    User.findByIdAndRemove(userId)
+                        .then((userDb) => {
+                            if (userDb) {
+                                res.status(200).send(userDb);
+                            } else {
+                                res.status(204).json({error: "User not found"});
+                            }
+                        }).catch((err) => next(err));
+                })
+                .catch((err) => next(err));
+
         } else {
           res.status(422).json({error: "Invalid user id"});
         }
