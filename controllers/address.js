@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 function findAddress(postalcode, number, suffix, res, next, url) {
 
-  const api_config = { headers: { "X-Api-Key": config.postcodeApiKey } };
+  const api_config = { headers: { "X-Api-Key": /*config.postcodeApiKey*/ config.postcodeApiKey } };
   api_config.params = url ? null : { postcode: postalcode, number: number };
 
   const api_url = url || "https://api.postcodeapi.nu/v2/addresses/";
@@ -19,9 +19,12 @@ function findAddress(postalcode, number, suffix, res, next, url) {
     } else {
 
       if(suffix != '') {
-        address = _.filter(addresses, ['addition', suffix.toUpperCase()])[0];
+        address= _.find(addresses, function(a){
+          return _.isEqual(suffix, a.letter) || _.isEqual(suffix, a.addition);
+        });
       } else if (addresses.length > 1){
-        address = _.filter(addresses, ['addition', null])[0];
+        // why is this here? You would still only want the first address in the array anyways?
+        address = _.find(addresses, ['addition', null]);
       } else {
         address = addresses[0];
       }
