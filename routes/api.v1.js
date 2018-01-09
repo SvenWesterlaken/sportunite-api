@@ -13,6 +13,7 @@ router.get('/address', address.addressMatch);
 router.all('*', passport.authenticate('jwt', { session: false }));
 
 router.post('/sportevents', sportevent.add);
+router.post('/sportevents/:id/attend', sportevent.attend);
 
 
 //User profile endpoints
