@@ -15,6 +15,7 @@ router.get('/sportevents/:id', sportevent.get);
 router.all('*', passport.authenticate('jwt', { session: false }));
 
 router.post('/sportevents', sportevent.add);
+router.post('/sportevents/:id/attend', sportevent.attend);
 
 
 

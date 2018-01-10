@@ -55,5 +55,27 @@ module.exports = {
         res.status(200).json({});
       }
     });
-  }
+  },
+	
+	attend(req, res, next) {
+		let eventId = req.body.eventId || '';
+		
+		console.log(eventId);
+		
+		if (eventId != '') {
+			console.log(req.user._id.toString());
+			neo4j.run("MATCH (u:User {id: {idParam}}) " +
+				"MATCH (e:Event {id: \"2007\"}) " +
+				"MERGE (u)-[:ATTENDS]->(e)" +
+				"RETURN e, u;", {
+					idParam: req.user._id.toString(),
+					eventParam: eventId.toString()
+				}
+			).catch(err => next(err)).then(result => {
+				console.log(result);
+				res.status(200).json({msg: "User successfully added to event"});
+				neo4j.close();
+			});
+		}
+	}
 };
