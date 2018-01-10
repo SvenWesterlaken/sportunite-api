@@ -10,9 +10,12 @@ router.post('/register', user.register);
 router.post('/login', user.login);
 router.get('/address', address.addressMatch);
 
+router.get('/sportevents/:id', sportevent.get);
+
 router.all('*', passport.authenticate('jwt', { session: false }));
 
 router.post('/sportevents', sportevent.add);
+
 
 
 //User profile endpoints
