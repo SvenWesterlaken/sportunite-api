@@ -35,7 +35,7 @@ module.exports = {
 				"MERGE (u)-[:ATTENDS]->(e)" +
 				"RETURN e, u;", {
 					idParam: req.user._id.toString(),
-					eventParam: eventId.toString()
+					eventParam: eventId
 				}
 			).catch(err => next(err)).then(result => {
 				console.log(result);
