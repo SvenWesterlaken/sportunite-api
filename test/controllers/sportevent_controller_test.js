@@ -22,6 +22,8 @@ describe('Test Sportevent controller', () => {
     password: 'test1234',
   };
 
+  let organisorId;
+
   let authToken = '';
 
   beforeEach((done) => {
@@ -102,6 +104,7 @@ describe('Test Sportevent controller', () => {
             const attendee1Id = testUser1._id.toString();
             const attendee2Id = testUser2._id.toString();
             const attendee3Id = testUser3._id.toString();
+            organisorId = attendee3Id;
 
             neo4j.run(
               "MERGE (attendee1:User {id: {attendee1Param}})" +
@@ -135,6 +138,14 @@ describe('Test Sportevent controller', () => {
         .get(`/api/v1/sportevents/1`)
         .set({Authorization: `Bearer ${authToken}`})
         .end((err, res) => {
+          console.log("testing organisorId: " + res.body.organisor._id);
+          expect(err).to.be.null;
+          expect(res).to.have.status(200);
+          expect(res.body).to.be.an('object');
+          expect(res.body.organisor).to.include({_id: `${organisorId}`});
+          expect(res.body.attendees).to.be.an('array').and.have.lengthOf(3);
+          // assert(result.records.length === 0);
+
           done();
       });
   });

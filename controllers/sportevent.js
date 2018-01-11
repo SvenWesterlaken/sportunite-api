@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const config = require('../config/env');
 const parser = require('parse-neo4j');
+const _ = require('lodash');
 
 const User = require('../models/user');
 
@@ -49,17 +50,21 @@ module.exports = {
               const organisatorId = parsed[0].organiser.id;
               let userIds = [];
               let attendees = [];
-              let organisators = [];
+              let organisator;
 
               userIds = parsed[0].attendees.map((attendee) => mongoose.mongo.ObjectId(attendee.id));
-              userIds.push(new mongoose.Types.ObjectId(organisatorId));
-              console.log('userIds: ' + JSON.stringify(userIds));
 
               User.find({'_id': {$in: userIds}}).catch(err => next(err)).then(
                 (users) => {
-                  console.log('users: ' + JSON.stringify(users));
-                  attendees.push(... users);
+                  // attendees.push(... users);
+                  sportevent.attendees = users;
+                  sportevent.organisor = _.find(users, (user) => {
+                    return user._id.toString() === organisatorId ? user : undefined;
+                  });
 
+                  neo4j.close();
+                  console.log("sportevent: " + JSON.stringify(sportevent));
+                  res.status(200).send(sportevent);
                 }
               )
             }
