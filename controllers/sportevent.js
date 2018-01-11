@@ -3,6 +3,7 @@ const objectId = require('mongodb').ObjectID;
 const mongoose = require('mongoose');
 const axios = require('axios');
 const config = require('../config/env');
+const parser = require('parse-neo4j');
 
 const User = require('../models/user');
 
@@ -26,31 +27,47 @@ module.exports = {
   },
 
   get(req, res, next) {
-    const eventId = parseInt(req.params.id) || '';
+    const eventId = req.params.id || '';
 
     axios.get(config.sportunite_asp_api.url + `/sportevents/${eventId}`).catch(err => next(err)).then(response => {
       let sportevent = response.data || '';
 
       if (sportevent !== '') {
-        neo4j.run(
-          "MATCH (e:Event {id: {eventParam}})" +
-          "MATCH (e)<-[:IS_ATTENDING]-(u:User)" +
-          "MATCH (e)-[:CREATED_BY]->(o:User)" +
-          "RETURN u AS attendee, o AS organisator",
-          {eventParam: eventId}
-        ).catch(err => next(err)).then(result => {
-          console.log(JSON.stringify(result));
-          let attendees = [];
-          result.records.forEach(record => {
-            console.log('attendees ids: ' + record._fields[0].properties.id);
-            attendees.push(record.attendee);
-          });
+        if (sportevent.isArray) {
 
-          sportevent.attendees = attendees;
+        } else {
+          neo4j.run(
+            "MATCH (u:User)-[rel2:IS_ATTENDING]->(e:Event {id: {eventParam}})-[rel1:CREATED_BY]->(o:User)" +
+            "RETURN collect(u) AS attendees, o AS organiser",
+            {eventParam: eventId}
+          ).catch(err => next(err)).then(
+            parser.parse
+          ).then(
+            (parsed) => {
+              console.log('parsed: ' + JSON.stringify(parsed));
 
-          res.status(200).send(sportevent);
-          neo4j.close();
-        });
+              const organisatorId = parsed[0].organiser.id;
+              let userIds = [];
+              let attendees = [];
+              let organisators = [];
+
+              userIds = parsed[0].attendees.map((attendee) => mongoose.mongo.ObjectId(attendee.id));
+              userIds.push(new mongoose.Types.ObjectId(organisatorId));
+              console.log('userIds: ' + JSON.stringify(userIds));
+
+              User.find({'_id': {$in: userIds}}).catch(err => next(err)).then(
+                (users) => {
+                  console.log('users: ' + JSON.stringify(users));
+                  attendees.push(... users);
+
+                }
+              )
+            }
+          )
+            .then((attendees) => {
+              console.log('returned attendees ' + JSON.stringify(attendees));
+            });
+        }
       } else {
         res.status(200).json({});
       }
