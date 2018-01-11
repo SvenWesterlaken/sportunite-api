@@ -12,15 +12,9 @@ chai.use(chai_http);
 
 describe('Convert address to latitude and longitude coordinates', () => {
     const addressWithoutSuffix = {
-        postal_code: '5017EE',
-        number: '270'
+        postal_code: '4827PE',
+        number: '373'
     };
-
-    // const addressWithSuffix = {
-    //     postal_code: '4815AA',
-    //     number: '51',
-    //     suffix: 'A'
-    // };
 
     const addressWithSuffix = {
         postal_code: '4814AC',
@@ -34,7 +28,7 @@ describe('Convert address to latitude and longitude coordinates', () => {
         suffix: 'C'
     };
 
-    it('Convert valid address without suffix to lat long', (done) => {
+    it.only('Convert valid address without suffix to lat long', (done) => {
         chai.request(server)
 
             .get('/api/v1/address')
@@ -44,14 +38,14 @@ describe('Convert address to latitude and longitude coordinates', () => {
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
                 expect(res.body).to.deep.include({ "coordinates": [
-                    5.0914176,
-                    51.5557933
+                  4.7918019,
+                  51.6072589
                 ]});
                 done();
             });
     });
 
-    it('Convert valid address with suffix to lat long', (done) => {
+    it.only('Convert valid address with suffix to lat long', (done) => {
         chai.request(server)
             .get('/api/v1/address')
             .query(addressWithSuffix)
@@ -60,20 +54,20 @@ describe('Convert address to latitude and longitude coordinates', () => {
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
                 expect(res.body).to.deep.include({ "coordinates": [
-                    4.7733834,
-                    51.6007238
+                  4.7639022,
+                  51.5903561
                 ]});
                 done();
             });
     });
 
-    it('Convert invalid address expects an error response', (done) => {
+    it.only('Convert invalid address expects an error response', (done) => {
         chai.request(server)
             .get('/api/v1/address')
             .query(invalidAddress)
             .end((err, res) => {
                 expect(res).to.have.status(404);
-                expect(res.body).to.deep.include({ "error": "No address found"});
+                expect(res.body).to.deep.include({ "error": "No address with this suffix"});
                 done();
             });
     });
