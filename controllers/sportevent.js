@@ -26,10 +26,7 @@ module.exports = {
 	attend(req, res, next) {
 		let eventId = req.body.eventId || '';
 		
-		console.log(eventId);
-		
 		if (eventId != '') {
-			console.log(req.user._id.toString());
 			neo4j.run("MATCH (u:User {id: {idParam}}) " +
 				"MATCH (e:Event {id: {eventParam}}) " +
 				"MERGE (u)-[:ATTENDS]->(e)" +
@@ -45,6 +42,20 @@ module.exports = {
 	},
 	
 	leave(req, res, next) {
+		let eventId = req.body.eventId || '';
 		
+		if (eventId != '') {
+			neo4j.run("MATCH (u:User {id: {idParam}}) " +
+				"MATCH (e:Event {id: {eventParam}}) " +
+				"MATCH (u)-[r:ATTENDS]->(e)" +
+				"DELETE r", {
+					idParam: req.user._id.toString(),
+					eventParam: eventId
+				}
+			).catch(err => next(err)).then(result => {
+				res.status(200).json({msg: "User succesfully removed from event"});
+				neo4j.close();
+			});
+		}
 	}
 };
