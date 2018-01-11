@@ -31,7 +31,7 @@ module.exports = {
 		if (eventId != '') {
 			console.log(req.user._id.toString());
 			neo4j.run("MATCH (u:User {id: {idParam}}) " +
-				"MATCH (e:Event {id: \"2007\"}) " +
+				"MATCH (e:Event {id: {eventParam}}) " +
 				"MERGE (u)-[:ATTENDS]->(e)" +
 				"RETURN e, u;", {
 					idParam: req.user._id.toString(),
