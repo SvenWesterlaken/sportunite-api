@@ -17,8 +17,9 @@ router.post('/sportevents/:id/attend', sportevent.attend);
 
 
 //User profile endpoints
-router.get('/users/:id?', user.read);
-router.put('/users/:id', user.update);
-router.delete('/users/:id', user.delete);
+router.get('/users', user.read);
+router.put('/users', user.update);
+router.delete('/users', user.delete);
+router.put('/changePassword', user.changePassword);
 
 module.exports = router;
