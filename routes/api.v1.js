@@ -14,6 +14,7 @@ router.all('*', passport.authenticate('jwt', { session: false }));
 
 router.post('/sportevents', sportevent.add);
 router.post('/sportevents/:id/attend', sportevent.attend);
+router.post('/sportevents/:id/leave', sportevent.leave);
 
 
 //User profile endpoints

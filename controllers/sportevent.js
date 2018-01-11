@@ -43,5 +43,9 @@ module.exports = {
 				neo4j.close();
 			});
 		}
+	},
+	
+	leave(req, res, next) {
+		
 	}
 };
