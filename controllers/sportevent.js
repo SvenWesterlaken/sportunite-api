@@ -38,7 +38,6 @@ module.exports = {
 					eventParam: eventId
 				}
 			).catch(err => next(err)).then(result => {
-				console.log(result);
 				res.status(200).json({msg: "User successfully added to event"});
 				neo4j.close();
 			});

@@ -1,0 +1,62 @@
+const chai = require('chai');
+const chai_http = require('chai-http');
+const server = require('../../index');
+const expect = chai.expect;
+const assert = chai.assert;
+const bcrypt = require('bcryptjs');
+const session = require('../../db/neo4j');
+const auth = require('../../auth/token');
+const User = require('../../models/user');
+
+describe('Attend Sportevent', () => {
+	it.only('attends a sportevent', (done) => {
+		const testUser = new User({
+			email: 'test@test.com',
+			password: bcrypt.hashSync('test1234'),
+			firstname: '22131tester1,',
+			lastname: 'testing',
+			birth: 1993 - 6 - 24,
+			gender: 'male',
+			address: {
+				street: 'Hinderstraat',
+				number: 1,
+				postal_code: '3077DA',
+				city: 'Rotterdam',
+				state: 'Zuid-Holland',
+				country: 'Nederland',
+				geometry: {
+					coordinates: [4.567827, 51.886838]
+				}
+			}
+		});
+		
+		const sportEventId = 1111;
+		
+		User.create(testUser)
+			.then((userDb) => {
+				auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
+					session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
+						.then((neoresult1) => {
+							session.run(`CREATE (u:User {id: "${userDb._id}"}) RETURN u;`)
+								.then((neoresult2) => {
+									chai.request(server)
+										.post(`/api/v1/sportevents/${sportEventId}/attend`)
+										.send({email: testUser.email, eventId: sportEventId})
+										.set({Authorization: `Bearer ${accessToken}`})
+										.end((err, res) => {
+											session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[:ATTENDS]->(e) RETURN u,e;`)
+												.then((neoresult3) => {
+													expect(err).to.be.null;
+													expect(res).to.have.status(200);
+													expect(res.body).to.include({msg: "User successfully added to event"});
+													expect(neoresult3.records[0]._fields[0].labels[0]).to.be.equal('User');
+													expect(neoresult3.records[0]._fields[1].labels[0]).to.be.equal('Event');
+													done();
+												});
+										});
+								});
+						});
+				});
+			});
+	});
+});
