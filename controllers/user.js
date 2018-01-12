@@ -163,7 +163,7 @@ module.exports = {
                     }).then((user) => {
                       user.save().catch(err => next(err)).then(user => {
                         let token = auth.encodeToken(user).catch((err) => next(err)).then((token) => {
-                          res.status(201).json({token: token, oldPass: oldPassword, newPass: newPassword, newHash: user.password});
+                          res.status(200).json({token: token, oldPass: oldPassword, newPass: newPassword, newHash: user.password});
                         });
                       });
                     });
@@ -173,7 +173,7 @@ module.exports = {
                 }
               );
             } else {
-              res.status(204).json({error: "User not found"});
+              res.status(404).json({error: "User not found"});
             }
           });
       } else {
