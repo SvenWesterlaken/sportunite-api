@@ -197,10 +197,9 @@ describe('Delete Sportevent', () => {
                 auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
                     session.run(`CREATE (e:Event{id: ${sportEventId}}) CREATE (u:User{id:"${userDb._id}"}) RETURN e,u;`)
                         .then((neoresult1) => {
-                            // console.log(neoresult1.records[0]._fields[1])
+                            //console.log(neoresult1.records[0]._fields[0])
                             session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MERGE (e)-[:CREATED_BY]->(u) RETURN e,u;`)
                                 .then((neoresult2) => {
-                                    // console.log(neoresult2.records[0]._fields[1])
                                     chai.request(server)
                                         .delete(`/api/v1/sportevents/${sportEventId}`)
                                         .send({email: testingUser.email, eventId: sportEventId})
@@ -208,6 +207,7 @@ describe('Delete Sportevent', () => {
                                         .end((err, res) => {
                                             session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH (e)-[:CREATED_BY]->(u) DETACH DELETE e RETURN u`)
                                                 .then((neoresult3) => {
+                                                	console.log(err)
                                                     expect(err).to.be.null;
                                                     expect(res).to.have.status(200);
                                                     expect(res.body).to.include({msg: "Sport event successfully deleted"});
