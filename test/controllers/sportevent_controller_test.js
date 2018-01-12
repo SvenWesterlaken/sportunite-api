@@ -208,10 +208,9 @@ describe('Delete Sportevent', () => {
                                         .end((err, res) => {
                                             session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH (e)-[:CREATED_BY]->(u) DETACH DELETE e RETURN u`)
                                                 .then((neoresult3) => {
-                                                    console.log(neoresult3);
-                                                    // expect(err).to.be.null;
-                                                    // expect(res).to.have.status(200);
-                                                    // expect(res.body).to.include({msg: "Sport event successfully deleted"});
+                                                    expect(err).to.be.null;
+                                                    expect(res).to.have.status(200);
+                                                    expect(res.body).to.include({msg: "Sport event successfully deleted"});
                                                     session.close();
                                                     done();
                                                 });
