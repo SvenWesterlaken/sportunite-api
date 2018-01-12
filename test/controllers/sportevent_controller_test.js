@@ -144,7 +144,11 @@ describe('Test Sportevent controller', () => {
           expect(res.body).to.be.an('object');
           expect(res.body.organisor).to.include({_id: `${organisorId}`});
           expect(res.body.attendees).to.be.an('array').and.have.lengthOf(3);
-          // assert(result.records.length === 0);
+          expect(res.body.sport).to.be.an('object');
+          expect(res.body.reservation).to.be.an('object');
+          expect(res.body.reservation.hall).to.be.an('object');
+          expect(res.body.reservation.hall.building).to.be.an('object');
+
 
           done();
       });
