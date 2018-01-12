@@ -67,11 +67,12 @@ module.exports = {
         		neo4j.run("MATCH (u:User{id:{idParam}}) " +
 					"MATCH (e:Event{id:{eventParam}}) " +
 					"MERGE (e)-[:CREATED_BY]->(u) " +
-					"DETACH DELETE e", {
+					"DETACH DELETE e " +
+			        "RETURN u", {
         			idParam: req.user._id.toString(),
 					eventParam: eventId
         		}).catch(err => next(err)).then(result => {
-        			console.log(result)
+        			//console.log(result);
 					if(result.records.length == 0) {
         				res.status(401).json({msg: "User did not create of the event"})
 					}
