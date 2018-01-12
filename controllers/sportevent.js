@@ -50,12 +50,13 @@ module.exports = {
 
 		if (eventId != '') {
 			neo4j.run("MATCH (u:User{id:idParam}) " +
-				"Match (e:Event{id:eventParam}) " +
-				"MATCH (e)-[:CREATED_BY]->(u) " +
+				"MATCH (e:Event{id:eventParam}) " +
+				"MERGE (e)-[:CREATED_BY]->(u) " +
 				"DETACH DELETE e ", {
 				idParam: req.user._id.toString(),
 				eventParam: eventId
 			}).catch(err => next(err)).then(result => {
+				console.log(result)
                 res.status(200).json({msg: "Sport event successfully deleted"});
                 neo4j.close();
             })
