@@ -35,43 +35,40 @@ module.exports = {
     let hallId;
     let reservationId;
     let buildingId;
-    let sportevents;
-    let promises = [];
+    let finalSportEvents = [];
 
     axios.get(config.sportunite_asp_api.url + `/sportevents/${eventId}`)
       .catch(err => next(err))
       .then(response => {
         if (eventId === '') { // if eventid == '' it means a get request has been send for all sportevents
-          sportevents = response.data._embedded.sportevents || '';
+          const resultAsSportevents = response.data._embedded.sportevents || '';
 
-          _.forEach(sportevents, (sportevent) => { // push a promise chain for every sportevent.
-            promises.push(getSporteventPromise(sportevent));
-          });
-          return Promise.all(promises); // this makes sure all promises for al events will be fired at once
+          return _.reduce(resultAsSportevents,(curr, next) => { // return one result of all promise chains
+            return curr.then(() => getSporteventPromise(next)); // chains every function with promise chain.
+          }, Promise.resolve("MESSAGE: All promises completed!"));
         } else { // a get request had been send for just one particular sportevent
           sportevent = response.data || '';
-          console.log("eventid is known");
           return getSporteventPromise(sportevent);
         }
       })
       .catch(err => next(err))
       .then((sportevent) => {
+        console.log(sportevent);
         if (sportevent === undefined) {
-          console.log("sportevent is undefined");
-          res.status(200).send(sportevents);
+          res.status(200).send(finalSportEvents);
         } else {
-          console.log("sportevent is NOT undefined");
           res.status(200).send(sportevent);
         }
       });
 
     function getSporteventPromise(sportevent) {
-          sportId = sportevent.sportId;
-          reservationId = sportevent.reservationId;
-          sportevent = _.pick(sportevent, ['sportEventId', 'name', 'minAttendees', 'maxAttendees',
-            'description', 'eventStartTime', 'eventEndTime']);
-          // get the sport connected to sportevent
-          return axios.get(config.sportunite_asp_api.url + `/sports/${sportId}`)
+      sportId = sportevent.sportId;
+      reservationId = sportevent.reservationId;
+      sportevent = _.pick(sportevent, ['sportEventId', 'name', 'minAttendees', 'maxAttendees',
+        'description', 'eventStartTime', 'eventEndTime']);
+      // get the sport connected to sportevent
+
+      return axios.get(config.sportunite_asp_api.url + `/sports/${sportId}`)
         .catch(err => next(err))
         .then((response) => {
           console.log('response sport: ' + JSON.stringify(response.data));
@@ -107,21 +104,17 @@ module.exports = {
         .catch(err => next(err))
         .then(() => {
           // now get the attendees and organisor from neo4j
-          console.log("eventId: " + eventId);
-
           return neo4j
             .run(
               "MATCH (u:User)-[rel2:IS_ATTENDING]->(e:Event {id: {eventParam}})-[rel1:CREATED_BY]->(o:User)" +
               "RETURN collect(u) AS attendees, o AS organiser",
-              {eventParam: eventId}
-              //////
+              {eventParam: sportevent.sportEventId.toString()}
             );
         })
         .catch(err => next(err))
         .then(parser.parse)
         .then((parsed) => {
-          console.log("parsed result: " + JSON.stringify(parsed));
-          organisatorId = parsed[0].organiser.id;
+          organisatorId = parsed[0].organiser.id; // save organisor id to find it later on
           let userIds;
           userIds = parsed[0].attendees.map((attendee) => mongoose.mongo.ObjectId(attendee.id));
           neo4j.close();
@@ -130,20 +123,16 @@ module.exports = {
         })
         .catch(err => next(err))
         .then((users) => {
-          console.log("mongodb result: " + JSON.stringify(users));
-          sportevent.attendees = users;
-          sportevent.organisor = _.find(users, (user) => {
+          sportevent.attendees = users; // all users are attendees
+          sportevent.organisor = _.find(users, (user) => { // find the one organisor by checking its id
             return user._id.toString() === organisatorId ? user : undefined;
           });
 
-          console.log("sportevent: " + JSON.stringify(sportevent));
-
-          if (eventId === '') {
-            sportevents.push(... sportevent);
-          } else {
+          if (eventId === '') { // more sportevents will likely be requested after this one.
+            finalSportEvents.push(sportevent);
+          } else { // this function will only be fired once so return the sportevent
             return sportevent;
           }
-
         });
     }
   },
