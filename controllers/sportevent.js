@@ -76,6 +76,9 @@ module.exports = {
           sportevent.sport = _.pick(sport, ['sportId', 'name']);
 
           if (reservationId !== null) { // get the reservation connected to sportevent if there is a reservation id
+            // create a nested chain of promises that retrieves the reservation, hall and building.
+            // returns the promise chain so the neo4j query chain can chain on this one.
+            // if reservation on sportevent doesnt exist this nested chain wont be fired.
             return axios.get(config.sportunite_asp_api.url + `/reservations/${reservationId}`)
               .then(response => {
                 const reservation = response.data || '';
