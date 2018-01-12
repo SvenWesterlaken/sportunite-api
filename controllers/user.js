@@ -92,6 +92,7 @@ module.exports = {
         res.status(422).json({error: "Invalid user id"});
       }
     } else {
+      //Heeft geen endpoint op dit moment
       User.find({}).then((users) => res.status(200).send(users)).catch((err) => next(err));
     }
   },
@@ -163,7 +164,7 @@ module.exports = {
                     }).then((user) => {
                       user.save().catch(err => next(err)).then(user => {
                         let token = auth.encodeToken(user).catch((err) => next(err)).then((token) => {
-                          res.status(200).json({token: token, oldPass: oldPassword, newPass: newPassword, newHash: user.password});
+                          res.status(200).json({token: token});
                         });
                       });
                     });
