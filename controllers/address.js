@@ -2,61 +2,67 @@ const config = require('../config/env');
 const axios = require('axios');
 const _ = require('lodash');
 
-module.exports = {
+function findAddress(postalcode, number, suffix, res, next, url) {
 
+  const api_config = { headers: { "X-Api-Key": /*config.postcodeApiKey*/ config.postcodeApiKey } };
+  api_config.params = url ? null : { postcode: postalcode, number: number };
+
+  const api_url = url || "https://api.postcodeapi.nu/v2/addresses/";
+
+  axios.get(api_url, api_config).catch(err => next(err)).then(response => {
+    let addresses = response.data._embedded.addresses;
+    let nextpage = response.data._links.next || '';
+    let address;
+
+    if(addresses.length < 1) {
+      res.status(404).send({error: "No address found"});
+    } else {
+
+      if(suffix != '') {
+        address= _.find(addresses, function(a){
+          return _.isEqual(suffix, a.letter) || _.isEqual(suffix, a.addition);
+        });
+      } else if (addresses.length > 1){
+        // why is this here? You would still only want the first address in the array anyways?
+        address = _.find(addresses, ['addition', null]);
+      } else {
+        address = addresses[0];
+      }
+
+      if(!address && nextpage != '') {
+        findAddress(postalcode, number, suffix, res, next, nextpage.href);
+      } else if (!address) {
+        res.status(404).send({error: "No address with this suffix"});
+      } else {
+
+        const returnObject = {
+          street: address.street,
+          number: address.number,
+          suffix: address.addition,
+          postal_code: address.postcode,
+          city: address.city.label,
+          state: address.province.label,
+          coordinates: address.geo.center.wgs84.coordinates
+        }
+
+        res.status(200).send(returnObject);
+      }
+    }
+  });
+}
+
+
+module.exports = {
   addressMatch(req, res, next) {
-    const postalCode = req.body.postal_code || '';
-    const number = req.body.number || '';
-    const suffix = req.body.suffix || '';
+
+    const postalCode = req.query.postal_code || '';
+    const number = req.query.number || '';
+    const suffix = req.query.suffix || '';
 
     if(postalCode != '' || number != '') {
-
-      axios.get("https://api.postcodeapi.nu/v2/addresses/", {
-        params: {
-          postcode: postalCode,
-          number: number
-        },
-        headers: {
-          "X-Api-Key": config.postcodeApiKey
-        }
-      }).catch(err => next(err)).then(response => {
-        let addresses = response.data._embedded.addresses;
-        let address;
-
-        if(addresses.length < 1) {
-          res.status(404).send({error: "No address found"});
-        } else {
-
-          if(suffix != '') {
-            address = _.filter(addresses, ['letter', suffix])[0];
-          } else if (addresses.length > 1){
-            address = _.filter(addresses, ['letter', null])[0];
-          } else {
-            address = addresses[0];
-          }
-
-          if(!address) {
-            res.status(404).send({error: "No address with this suffix"});
-          } else {
-            
-            const returnObject = {
-              street: address.street,
-              number: address.number,
-              suffix: address.letter,
-              postal_code: address.postcode,
-              city: address.city.label,
-              state: address.province.label,
-              coordinates: address.geo.center.wgs84.coordinates
-            }
-
-            res.status(200).send(returnObject);
-          }
-        }
-      });
+      findAddress(postalCode, number, suffix, res, next);
     } else {
       res.status(400).json({error: "Invalid body"});
     }
-
   }
-
 }

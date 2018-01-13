@@ -4,6 +4,7 @@
 const mongoose = require('mongoose');
 const config = require('../config/env');
 const session = require ('../db/neo4j');
+const _ = require('lodash');
 
 
 
@@ -24,18 +25,20 @@ before((done) => {
 
 beforeEach((done) => {
     const { users } = mongoose.connection.collections;
-    users.drop(() => {});
+    users.drop(() => {
+        session
+            .run(
+                "MATCH (n) " +
+                "OPTIONAL MATCH (n)-[r]-() " +
+                "DELETE n,r "
+            )
+            .then(() => {
+                console.log('testdb: all neo4j nodes + r have been dropped');
+                done();
+            })
+            .catch((error) => console.log(error));
+    });
 
-    session
-        .run(
-            "MATCH (n) " +
-            "OPTIONAL MATCH (n)-[r]-() " +
-            "DELETE n,r "
-        )
-        .then(() => {
-            console.log('testdb: all neo4j nodes + r have been dropped');
-            done();
-        })
-        .catch((error) => console.log(error));
+
 
 });

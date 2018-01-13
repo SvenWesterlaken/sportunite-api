@@ -16,10 +16,16 @@ describe('Convert address to latitude and longitude coordinates', () => {
         number: '270'
     };
 
+    // const addressWithSuffix = {
+    //     postal_code: '4815AA',
+    //     number: '51',
+    //     suffix: 'A'
+    // };
+
     const addressWithSuffix = {
-        postal_code: '4879AG',
-        number: '34',
-        suffix: 'C'
+        postal_code: '4814AC',
+        number: '63',
+        suffix: 'D46'
     };
 
     const invalidAddress = {
@@ -30,8 +36,9 @@ describe('Convert address to latitude and longitude coordinates', () => {
 
     it('Convert valid address without suffix to lat long', (done) => {
         chai.request(server)
-            .post('/api/v1/address')
-            .send(addressWithoutSuffix)
+
+            .get('/api/v1/address')
+            .query(addressWithoutSuffix)
             .end((err, res) => {
                 console.log(JSON.stringify(err));
                 expect(err).to.be.null;
@@ -46,31 +53,15 @@ describe('Convert address to latitude and longitude coordinates', () => {
 
     it('Convert valid address with suffix to lat long', (done) => {
         chai.request(server)
-            .post('/api/v1/address')
-            .send(addressWithSuffix)
+            .get('/api/v1/address')
+            .query(addressWithSuffix)
             .end((err, res) => {
                 console.log(JSON.stringify(err));
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
                 expect(res.body).to.deep.include({ "coordinates": [
-                    4.6193232,
-                    51.5642203
-                ]});
-                done();
-            });
-    });
-
-    it('Convert valid address with suffix to lat long', (done) => {
-        chai.request(server)
-            .post('/api/v1/address')
-            .send(addressWithSuffix)
-            .end((err, res) => {
-                console.log(JSON.stringify(err));
-                expect(err).to.be.null;
-                expect(res).to.have.status(200);
-                expect(res.body).to.deep.include({ "coordinates": [
-                    4.6193232,
-                    51.5642203
+                    4.7733834,
+                    51.6007238
                 ]});
                 done();
             });
@@ -78,8 +69,8 @@ describe('Convert address to latitude and longitude coordinates', () => {
 
     it('Convert invalid address expects an error response', (done) => {
         chai.request(server)
-            .post('/api/v1/address')
-            .send(invalidAddress)
+            .get('/api/v1/address')
+            .query(invalidAddress)
             .end((err, res) => {
                 expect(res).to.have.status(404);
                 expect(res.body).to.deep.include({ "error": "No address found"});
