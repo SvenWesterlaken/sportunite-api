@@ -18,7 +18,7 @@ router.post('/sportevents/:id/attend', sportevent.attend);
 
 //User profile endpoints
 router.get('/profile', user.profile)
-router.get('/users', user.read);
+// router.get('/users', user.read); Old request may be reused with /:id
 router.put('/users', user.update);
 router.delete('/users', user.delete);
 router.put('/changePassword', user.changePassword);

@@ -178,7 +178,7 @@ describe('User login', () => {
 
 describe('Retrieving user', () => {
 
-    it('Retrieves a single user', (done) => {
+    it('Retrieves the current authenticated user', (done) => {
         const testUser = new User({
             email: 'test@test.com',
             password: bcrypt.hashSync('test1234'),
@@ -201,16 +201,16 @@ describe('Retrieving user', () => {
 
         User.create(testUser)
             .then((userDb) => {
-                console.log("return value after creating user: " + JSON.stringify(userDb));
                 auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
                     chai.request(server)
-                        .get(`/api/v1/users`)
+                        .get(`/api/v1/profile`)
                         .set({Authorization: `Bearer ${accessToken}`})
                         .end((err, res) => {
                             expect(err).to.be.null;
                             expect(res).to.have.status(200);
                             expect(res.body).to.be.a('object');
                             expect(res.body).to.include({email: 'test@test.com'});
+                            expect(res.body._id.toString()).to.equal(userDb._id.toString());
                             done();
                         });
                 });
@@ -351,21 +351,20 @@ describe('Modifying user', () => {
                         .send(userDb)
                         .set({Authorization: `Bearer ${accessToken}`})
                         .end((err, res) => {
-                            console.log(JSON.stringify(err));
                             expect(err).to.be.null;
                             expect(res).to.have.status(200);
 
                             User.findOne({email: 'test1@test11.com'})
                                 .then((user) => {
-                                    assert(user === null);
+                                    expect(user).to.be.null;
                                     session
                                         .run(
                                             "MATCH (user:User) RETURN user"
                                         )
                                         .then((result) => {
-                                            console.log('result: ' + JSON.stringify(result.records.length));
-                                            assert(result.records.length === 0);
                                             session.close();
+                                            expect(result.records).have.lengthOf(0);
+
                                             done();
                                         });
                                 });
@@ -403,11 +402,10 @@ describe('Modifying user', () => {
             .send({oldPassword: 'test1234', newPassword: 'test'})
             .set({Authorization: `Bearer ${accessToken}`})
             .end((err, res) => {
-              console.log(JSON.stringify(err));
               expect(err).to.be.null;
               expect(res).to.have.status(200);
               expect(res.body.token).to.be.a('string');
-              expect(res.body.token !== accessToken);
+              expect(res.body.token).to.equal(accessToken);
               done();
             });
         });
