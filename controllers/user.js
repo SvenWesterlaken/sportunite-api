@@ -75,6 +75,11 @@ module.exports = {
     }
   },
 
+  //Reading authenticated user
+  profile(req, res, next) {
+    res.send(req.user);
+  },
+
   //Reading a user
   read(req, res, next) {
     const userId = passport.userId;
