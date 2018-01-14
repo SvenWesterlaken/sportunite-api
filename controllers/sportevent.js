@@ -26,22 +26,61 @@ module.exports = {
 	attend(req, res, next) {
 		let eventId = req.body.eventId || '';
 		
-		console.log(eventId);
-		
 		if (eventId != '') {
-			console.log(req.user._id.toString());
 			neo4j.run("MATCH (u:User {id: {idParam}}) " +
-				"MATCH (e:Event {id: \"2007\"}) " +
+				"MATCH (e:Event {id: {eventParam}}) " +
 				"MERGE (u)-[:ATTENDS]->(e)" +
 				"RETURN e, u;", {
 					idParam: req.user._id.toString(),
-					eventParam: eventId.toString()
+					eventParam: eventId
 				}
 			).catch(err => next(err)).then(result => {
-				console.log(result);
 				res.status(200).json({msg: "User successfully added to event"});
 				neo4j.close();
 			});
 		}
+	},
+	
+	leave(req, res, next) {
+		let eventId = req.body.eventId || '';
+		
+		if (eventId != '') {
+			neo4j.run("MATCH (u:User {id: {idParam}}) " +
+				"MATCH (e:Event {id: {eventParam}}) " +
+				"MATCH (u)-[r:ATTENDS]->(e)" +
+				"DELETE r", {
+					idParam: req.user._id.toString(),
+					eventParam: eventId
+				}
+			).catch(err => next(err)).then(result => {
+				res.status(200).json({msg: "User succesfully removed from event"});
+				neo4j.close();
+			});
+		}
+	},
+	
+	remove(req, res, next) {
+        let eventId = req.body.eventId || '';
+        let userId = req.user._id || '';
+        if (objectId.isValid(userId)) {
+        	if (eventId != '')
+        		neo4j.run("MATCH (u:User{id:{idParam}}) " +
+					"MATCH (e:Event{id:{eventParam}}) " +
+					"MERGE (e)-[:CREATED_BY]->(u) " +
+					"DETACH DELETE e " +
+			        "RETURN u", {
+        			idParam: req.user._id.toString(),
+					eventParam: eventId
+        		}).catch(err => next(err)).then(result => {
+        			//console.log(result);
+					if(result.records.length == 0) {
+        				res.status(401).json({msg: "User did not create of the event"})
+					}
+					res.status(200).json({msg: "Sport event successfully deleted"});
+        			neo4j.close();
+        		})
+        }else {
+            res.status(422).json({error: "Invalid user id"});
+		}
 	}
-};
+}

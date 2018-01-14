@@ -27,8 +27,8 @@ describe('Convert address to latitude and longitude coordinates', () => {
         number: '34',
         suffix: 'C'
     };
-
-    it.only('Convert valid address without suffix to lat long', (done) => {
+	
+    xit('Convert valid address without suffix to lat long', (done) => {
         chai.request(server)
 
             .get('/api/v1/address')
@@ -44,8 +44,8 @@ describe('Convert address to latitude and longitude coordinates', () => {
                 done();
             });
     });
-
-    it.only('Convert valid address with suffix to lat long', (done) => {
+    
+    xit('Convert valid address with suffix to lat long', (done) => {
         chai.request(server)
             .get('/api/v1/address')
             .query(addressWithSuffix)
@@ -60,8 +60,8 @@ describe('Convert address to latitude and longitude coordinates', () => {
                 done();
             });
     });
-
-    it.only('Convert invalid address expects an error response', (done) => {
+	
+    xit('Convert invalid address expects an error response', (done) => {
         chai.request(server)
             .get('/api/v1/address')
             .query(invalidAddress)
@@ -71,6 +71,4 @@ describe('Convert address to latitude and longitude coordinates', () => {
                 done();
             });
     });
-
-
 });
