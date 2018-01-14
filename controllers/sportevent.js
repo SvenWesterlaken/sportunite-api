@@ -9,7 +9,6 @@ const _ = require('lodash');
 const User = require('../models/user');
 
 module.exports = {
-	
 	add(req, res, next)  {
 		let eventId = req.body.eventId || '';
 		
@@ -17,9 +16,10 @@ module.exports = {
 			neo4j.run("MERGE (u:User {id: {idParam}}) " +
 				"MERGE (e:Event {id: {eventParam}}) " +
 				"MERGE (e)-[:CREATED_BY]->(u) " +
+				"MERGE (u)-[:IS_ATTENDING]->(e) " +
 				"RETURN u, e;", {
 				idParam: req.user._id.toString(),
-				eventParam: eventId
+				eventParam: eventId.toString(),
 			}).catch(err => next(err)).then(result => {
 				res.status(201).json({msg: "Event successfully created"});
 				neo4j.close();
@@ -140,13 +140,14 @@ module.exports = {
 		}
 	},
 	
-	attend(req, res, next) {
+	attend(req, res, next)
+	{
 		let eventId = req.body.eventId || '';
 		
 		if (eventId != '') {
 			neo4j.run("MATCH (u:User {id: {idParam}}) " +
-				"MATCH (e:Event {id: {eventParam}}) " +
-				"MERGE (u)-[:ATTENDS]->(e)" +
+				"MATCH (e:Event {id:{eventParam}) " +
+				"MERGE (u)-[:IS_ATTENDING]->(e)" +
 				"RETURN e, u;", {
 					idParam: req.user._id.toString(),
 					eventParam: eventId

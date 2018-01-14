@@ -29,3 +29,4 @@ router.put('/users/:id', user.update);
 router.delete('/users/:id', user.delete);
 
 module.exports = router;
+
