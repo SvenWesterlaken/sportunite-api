@@ -11,7 +11,7 @@ const env = {
   allowOrigin: process.env.ALLOW_ORIGIN || '*',
   secretkey: process.env.DB_SECRET_KEY || "secretsportunite-app-510783",
   postcodeApiKey: process.env.POSTCODE_API_KEY || "7fZyozww3m2zMqd3jvtcC4VSsfvQspUl5QYP54J1",
-  reservePostcodeApiKey: process.env.RESERVE_POSTCODE_API_KEY || "KOIQuTgLOPPv57hIEjXZWBSHEYJu8q5PQc7zxof0"
+  reservePostcodeApiKey: process.env.RESERVE_POSTCODE_API_KEY || "KOIQuTgLOPPv57hIEjXZWBSHEYJu8q5PQc7zxof0",
 }
 
 env.mongo = {
@@ -30,6 +30,10 @@ env.neo4j = {
   username: process.env.NEO_USER || 'neo4j',
   password: process.env.NEO_PASS || 'admin',
   url: process.env.NEO_URL || 'bolt://127.0.0.1:7687'
+}
+
+env.sportunite_asp_api = {
+  url: process.env.SPORTUNITE_ASP_API || ''
 }
 
 module.exports = env;
