@@ -16,6 +16,7 @@ passport.use(new JwtStrategy(options, (payload, done) => {
   User.findById(payload.sub).catch((err) => done(err, false)).then((user) => {
 
     if(user) {
+      passport.userId = payload.sub;
       done(null, user);
     } else {
       done(null, false);
