@@ -101,6 +101,7 @@ describe('Test Sportevent controller', () => {
             testUser3._id = result3._id;
           }).then(() => {
             const eventId = '1';
+            const evenId2 = '2';
             const attendee1Id = testUser1._id.toString();
             const attendee2Id = testUser2._id.toString();
             const attendee3Id = testUser3._id.toString();
@@ -109,21 +110,23 @@ describe('Test Sportevent controller', () => {
             neo4j.run(
               "MERGE (attendee1:User {id: {attendee1Param}})" +
               "MERGE (e:Event {id: {eventParam}})" +
-              "MERGE (attendee1)-[rel1:IS_ATTENDING]->(e)" +
-              "MERGE (attendee2:User {id: {attendee2Param}})-[rel2:IS_ATTENDING]->(e)" +
-              "MERGE (attendee3:User {id: {attendee3Param}})<-[rel3:CREATED_BY]-(e)" +
-              "MERGE (attendee3)-[rel4:IS_ATTENDING]->(e)" +
-              "RETURN attendee1, attendee2, attendee3, e, rel1, rel2, rel3, rel4;",
+              "MERGE (e2:Event {id: {event2Param}})" +
+              "MERGE (attendee1)-[:IS_ATTENDING]->(e)" +
+              "MERGE (attendee1)-[:IS_ATTENDING]->(e2)" +
+              "MERGE (attendee2:User {id: {attendee2Param}})-[:IS_ATTENDING]->(e)" +
+              "MERGE (attendee3:User {id: {attendee3Param}})<-[:CREATED_BY]-(e)" +
+              "MERGE (attendee3)<-[:CREATED_BY]-(e2)" +
+              "MERGE (attendee3)-[:IS_ATTENDING]->(e)" +
+              "MERGE (attendee3)-[:IS_ATTENDING]->(e2)" +
+              "RETURN attendee1, attendee2, attendee3, e, e2;",
               {attendee1Param: attendee1Id, attendee2Param: attendee2Id, attendee3Param: attendee3Id,
-                eventParam: eventId}
+                eventParam: eventId, event2Param: evenId2}
             ).catch((err) => console.log('error: ' + err)).then(
               parser.parse
             ).then(
               (parsed) => {
-                parsed.forEach((result) => {
-                  console.log('neo4j result: ' + JSON.stringify(result));
-                  done();
-                })
+                console.log("parsed test result: " + JSON.stringify(parsed));
+                done();
               })
           })
         })
@@ -138,7 +141,8 @@ describe('Test Sportevent controller', () => {
         .get(`/api/v1/sportevents/1`)
         .set({Authorization: `Bearer ${authToken}`})
         .end((err, res) => {
-          console.log("testing organisorId: " + res.body.organisor._id);
+          console.log("Error: " + JSON.stringify(err));
+
           expect(err).to.be.null;
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('object');
@@ -148,9 +152,23 @@ describe('Test Sportevent controller', () => {
           expect(res.body.reservation).to.be.an('object');
           expect(res.body.reservation.hall).to.be.an('object');
           expect(res.body.reservation.hall.building).to.be.an('object');
-
-
           done();
+      });
+  });
+
+  it.only('GET /sportevents/:id Retrieving multiple sportevents should return a sportevent', (done) => {
+    chai.request(server)
+      .get(`/api/v1/sportevents`)
+      .set({Authorization: `Bearer ${authToken}`})
+      .end((err, res) => {
+        console.log("Error: " + JSON.stringify(err));
+
+        expect(err).to.be.null;
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array').and.have.lengthOf(2);
+        expect(res.body[1].organisor).to.include({_id: `${organisorId}`});
+        expect(res.body[1].attendees).to.be.an('array').and.have.lengthOf(2);
+        done();
       });
   });
 
