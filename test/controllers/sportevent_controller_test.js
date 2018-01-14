@@ -102,7 +102,7 @@ describe('Attend Sportevent', () => {
 										.send({email: testUser.email, eventId: sportEventId})
 										.set({Authorization: `Bearer ${accessToken}`})
 										.end((err, res) => {
-											session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[:ATTENDS]->(e) RETURN u,e;`)
+											session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[:IS_ATTENDING]->(e) RETURN u,e;`)
 												.then((neoresult3) => {
 													expect(err).to.be.null;
 													expect(res).to.have.status(200);
@@ -150,16 +150,16 @@ describe('Leave Sportevent', () => {
 						.then((neoresult1) => {
 							session.run(`CREATE (u:User {id: "${userDb._id}"}) RETURN u;`)
 								.then((neoresult2) => {
-									session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MERGE(u)-[:ATTENDS]->(e) RETURN u,e;`)
+									session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MERGE(u)-[:IS_ATTENDING]->(e) RETURN u,e;`)
 										.then((neoresult3) => {
 											chai.request(server)
 												.post(`/api/v1/sportevents/${sportEventId}/leave`)
 												.send({email: testUser2.email, eventId: sportEventId})
 												.set({Authorization: `Bearer ${accessToken}`})
 												.end((err, res) => {
-													session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[r:ATTENDS]->(e) DELETE r;`)
+													session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[r:IS_ATTENDING]->(e) DELETE r;`)
 														.then((neoresult4) => {
-															session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH (e:Event{id: ${sportEventId}}) MATCH (u)-[:ATTENDS]->(e) RETURN u, e;`)
+															session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH (e:Event{id: ${sportEventId}}) MATCH (u)-[:IS_ATTENDING]->(e) RETURN u, e;`)
 																.then((neoresult5) => {
 																	expect(err).to.be.null;
 																	expect(res).to.have.status(200);

@@ -165,7 +165,7 @@ module.exports = {
 		if (eventId != '') {
 			neo4j.run("MATCH (u:User {id: {idParam}}) " +
 				"MATCH (e:Event {id: {eventParam}}) " +
-				"MATCH (u)-[r:ATTENDS]->(e)" +
+				"MATCH (u)-[r:IS_ATTENDING]->(e)" +
 				"DELETE r", {
 					idParam: req.user._id.toString(),
 					eventParam: eventId
