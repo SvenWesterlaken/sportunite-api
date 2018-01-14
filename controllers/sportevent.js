@@ -11,7 +11,7 @@ const User = require('../models/user');
 module.exports = {
 	add(req, res, next)  {
 		let eventId = req.body.eventId || '';
-		
+
 		if (eventId != '') {
 			neo4j.run("MERGE (u:User {id: {idParam}}) " +
 				"MERGE (e:Event {id: {eventParam}}) " +
@@ -26,7 +26,7 @@ module.exports = {
 			})
 		}
 	},
-	
+
 	get(req, res, next) {
 		const eventId = req.params.id || '';
 		let sportevent;
@@ -36,13 +36,13 @@ module.exports = {
 		let reservationId;
 		let buildingId;
 		let finalSportEvents = [];
-		
+
 		axios.get(config.sportunite_asp_api.url + `/sportevents/${eventId}`)
 			.catch(err => next(err))
 			.then(response => {
 				if (eventId === '') { // if eventid == '' it means a get request has been send for all sportevents
 					const resultAsSportevents = response.data._embedded.sportevents || '';
-					
+
 					return _.reduce(resultAsSportevents, (curr, next) => { // return one result of all promise chains
 						return curr.then(() => getSporteventPromise(next)); // chains every function with promise chain.
 					}, Promise.resolve("MESSAGE: All promises completed!"));
@@ -60,21 +60,21 @@ module.exports = {
 					res.status(200).send(sportevent);
 				}
 			});
-		
+
 		function getSporteventPromise(sportevent) {
 			sportId = sportevent.sportId;
 			reservationId = sportevent.reservationId;
 			sportevent = _.pick(sportevent, ['sportEventId', 'name', 'minAttendees', 'maxAttendees',
 				'description', 'eventStartTime', 'eventEndTime']);
 			// get the sport connected to sportevent
-			
+
 			return axios.get(config.sportunite_asp_api.url + `/sports/${sportId}`)
 				.catch(err => next(err))
 				.then((response) => {
 					console.log('response sport: ' + JSON.stringify(response.data));
 					const sport = response.data || '';
 					sportevent.sport = _.pick(sport, ['sportId', 'name']);
-					
+
 					if (reservationId !== null) { // get the reservation connected to sportevent if there is a reservation id
 						// create a nested chain of promises that retrieves the reservation, hall and building.
 						// returns the promise chain so the neo4j query chain can chain on this one.
@@ -99,7 +99,7 @@ module.exports = {
 							.then(response => {
 								const building = response.data || '';
 								sportevent.reservation.hall.building = _.pick(building, ['buildingId', 'name', 'address']);
-								
+
 							})
 							.catch(err => next(err));
 					}
@@ -130,7 +130,7 @@ module.exports = {
 					sportevent.organisor = _.find(users, (user) => { // find the one organisor by checking its id
 						return user._id.toString() === organisatorId ? user : undefined;
 					});
-					
+
 					if (eventId === '') { // more sportevents will likely be requested after this one.
 						finalSportEvents.push(sportevent);
 					} else { // this function will only be fired once so return the sportevent
@@ -139,15 +139,15 @@ module.exports = {
 				});
 		}
 	},
-	
+
 	attend(req, res, next)
 	{
 		let eventId = req.body.eventId || '';
-		
+
 		if (eventId != '') {
 			neo4j.run("MATCH (u:User {id: {idParam}}) " +
-				"MATCH (e:Event {id:{eventParam}) " +
-				"MERGE (u)-[:IS_ATTENDING]->(e)" +
+				"MATCH (e:Event {id: {eventParam}}) " +
+				"MERGE (u)-[:IS_ATTENDING]->(e) " +
 				"RETURN e, u;", {
 					idParam: req.user._id.toString(),
 					eventParam: eventId
@@ -158,14 +158,14 @@ module.exports = {
 			});
 		}
 	},
-	
+
 	leave(req, res, next) {
 		let eventId = req.body.eventId || '';
-		
+
 		if (eventId != '') {
 			neo4j.run("MATCH (u:User {id: {idParam}}) " +
 				"MATCH (e:Event {id: {eventParam}}) " +
-				"MATCH (u)-[r:IS_ATTENDING]->(e)" +
+				"MATCH (u)-[r:IS_ATTENDING]->(e) " +
 				"DELETE r", {
 					idParam: req.user._id.toString(),
 					eventParam: eventId
@@ -176,7 +176,7 @@ module.exports = {
 			});
 		}
 	},
-	
+
 	remove(req, res, next) {
 		let eventId = req.body.eventId || '';
 		let userId = req.user._id || '';
