@@ -178,7 +178,7 @@ describe('User login', () => {
 
 describe('Retrieving user', () => {
 
-    it('Retrieves a single user', (done) => {
+    it('Retrieves the current authenticated user', (done) => {
         const testUser = new User({
             email: 'test@test.com',
             password: bcrypt.hashSync('test1234'),
@@ -201,23 +201,24 @@ describe('Retrieving user', () => {
 
         User.create(testUser)
             .then((userDb) => {
-                console.log("return value after creating user: " + JSON.stringify(userDb));
                 auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
                     chai.request(server)
-                        .get(`/api/v1/users/${userDb._id}`)
+                        .get(`/api/v1/profile`)
                         .set({Authorization: `Bearer ${accessToken}`})
                         .end((err, res) => {
                             expect(err).to.be.null;
                             expect(res).to.have.status(200);
                             expect(res.body).to.be.a('object');
                             expect(res.body).to.include({email: 'test@test.com'});
+                            expect(res.body._id.toString()).to.equal(userDb._id.toString());
                             done();
                         });
                 });
             });
     });
 
-    it('Retrieving multiple users', (done) => {
+    // Heeft geen endpoint, /users wordt gebruikt om 1 user op te halen door middel van gegevens uit de token te halen
+    xit('Retrieving multiple users', (done) => {
         const testUser1 = new User({
             email: 'test@test.com',
             password: bcrypt.hashSync('test1234'),
@@ -263,7 +264,7 @@ describe('Retrieving user', () => {
                 .then((userDb) => {
                     auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
                         chai.request(server)
-                            .get(`/api/v1/users/`)
+                            .get(`/api/v1/users`)
                             .set({Authorization: `Bearer ${accessToken}`})
                             .end((err, res) => {
                                 expect(err).to.be.null;
@@ -306,7 +307,8 @@ describe('Modifying user', () => {
                 auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
                     userDb.firstname = "UpdatedName";
                     chai.request(server)
-                        .put(`/api/v1/users/${userDb._id}`)
+                        .put(`/api/v1/users`)
+                        // .put(`/api/v1/users/${userDb._id}`)
                         .send(userDb)
                         .set({Authorization: `Bearer ${accessToken}`})
                         .end((err, res) => {
@@ -344,25 +346,25 @@ describe('Modifying user', () => {
             .then((userDb) => {
                 auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
                     chai.request(server)
-                        .delete(`/api/v1/users/${userDb._id}`)
+                        .delete(`/api/v1/users`)
+                        // .delete(`/api/v1/users/${userDb._id}`)
                         .send(userDb)
                         .set({Authorization: `Bearer ${accessToken}`})
                         .end((err, res) => {
-                            console.log(JSON.stringify(err));
                             expect(err).to.be.null;
                             expect(res).to.have.status(200);
 
                             User.findOne({email: 'test1@test11.com'})
                                 .then((user) => {
-                                    assert(user === null);
+                                    expect(user).to.be.null;
                                     session
                                         .run(
                                             "MATCH (user:User) RETURN user"
                                         )
                                         .then((result) => {
-                                            console.log('result: ' + JSON.stringify(result.records.length));
-                                            assert(result.records.length === 0);
                                             session.close();
+                                            expect(result.records).have.lengthOf(0);
+
                                             done();
                                         });
                                 });
@@ -370,4 +372,43 @@ describe('Modifying user', () => {
                 });
             });
     });
+
+  it('Updating password', (done) => {
+    const testUser = new User({
+      email: 'test@test.com',
+      password: bcrypt.hashSync('test1234'),
+      firstname: '22131tester1,',
+      lastname: 'testing',
+      birth: 1993 - 6 - 24,
+      gender: 'male',
+      address: {
+        street: 'Hinderstraat',
+        number: 1,
+        postal_code: '3077DA',
+        city: 'Rotterdam',
+        state: 'Zuid-Holland',
+        country: 'Nederland',
+        geometry: {
+          coordinates: [4.567827, 51.886838]
+        }
+      }
+    });
+
+    User.create(testUser)
+      .then((userDb) => {
+        auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
+          chai.request(server)
+            .put(`/api/v1/changePassword`)
+            .send({oldPassword: 'test1234', newPassword: 'test'})
+            .set({Authorization: `Bearer ${accessToken}`})
+            .end((err, res) => {
+              expect(err).to.be.null;
+              expect(res).to.have.status(200);
+              expect(res.body.token).to.be.a('string');
+              expect(res.body.token).to.equal(accessToken);
+              done();
+            });
+        });
+      });
+  });
 });

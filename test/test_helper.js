@@ -33,7 +33,7 @@ beforeEach((done) => {
                 "DELETE n,r "
             )
             .then(() => {
-                console.log('testdb: all neo4j nodes + r have been dropped');
+                // console.log('testdb: all neo4j nodes + r have been dropped');
                 done();
             })
             .catch((error) => console.log(error));
