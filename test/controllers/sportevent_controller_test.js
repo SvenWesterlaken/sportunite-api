@@ -227,7 +227,7 @@ describe('Delete Sportevent', () => {
 			});
 	});
 	
-	it.only('delete a sportevent wrong account', (done) => {
+	it('delete a sportevent wrong account', (done) => {
 		const user1 = new User({
 			email: 'test@test.com',
 			password: bcrypt.hashSync('test1234'),
