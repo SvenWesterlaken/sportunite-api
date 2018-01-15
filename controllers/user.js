@@ -4,6 +4,7 @@ const _ = require('lodash');
 const auth = require('../auth/token');
 const neo4j = require('../db/neo4j');
 const objectId = require('mongodb').ObjectID;
+const parser = require('parse-neo4j');
 
 const User = require('../models/user');
 const passport = require('../auth/passport');
@@ -80,10 +81,9 @@ module.exports = {
     res.send(req.user);
   },
 
-  //Reading a user
+  //Reading other users
   read(req, res, next) {
-    const userId = passport.userId;
-
+    const userId = req.params.id || '';
     if (userId !== '') {
       if (objectId.isValid(userId)) {
         User.findById(userId).then((user) => {
@@ -97,14 +97,16 @@ module.exports = {
         res.status(422).json({error: "Invalid user id"});
       }
     } else {
-      //Heeft geen endpoint op dit moment
-      User.find({}).then((users) => res.status(200).send(users)).catch((err) => next(err));
+      User.find({}).then((users) => {
+        users = users.filter(user => user._id.toString() !== (req.user._id.toString()));
+        res.status(200).send(users);
+      }).catch((err) => next(err));
     }
   },
 
   //Updating a user
   update(req, res, next) {
-    const userId = passport.userId;
+    const userId = req.user._id;
     const user = req.body;
 
     if (objectId.isValid(userId) && (user._id === undefined || user._id === userId)) {
@@ -123,7 +125,7 @@ module.exports = {
 
   //Deleting a user
   delete(req, res, next) {
-    const userId = passport.userId;
+    const userId = req.user._id;
 
     if (objectId.isValid(userId)) {
 
@@ -152,7 +154,7 @@ module.exports = {
 
   //Changing password
   changePassword(req, res, next) {
-    const userId = passport.userId;
+    const userId = req.user._id;
     const oldPassword = req.body.oldPassword || '';
     const newPassword = req.body.newPassword || '';
 
@@ -188,5 +190,65 @@ module.exports = {
     } else {
       res.status(400).json({error: "Invalid password information"});
     }
+  },
+
+  addFriend(req, res, next) {
+    const otherUser = req.params.id || '';
+
+    if (otherUser != '' && objectId.isValid(otherUser) && objectId.isValid(req.user._id)) {
+      neo4j.run("MATCH (u:User {id: {authUserIdParam}}) " +
+        "MATCH (o:User {id: {otherUserIdParam}}) " +
+        "MERGE (u)-[:FRIENDS_WITH]->(o) ", {
+          authUserIdParam: req.user._id.toString(),
+          otherUserIdParam: otherUser.toString()
+        }
+      ).catch(err => next(err)).then(result => {
+        res.status(200).json({msg: "Friendship relation successfully created"});
+        neo4j.close();
+      });
+    } else {
+      res.status(400).json({error: "User not found"});
+    }
+  },
+
+  removeFriend(req, res, next) {
+    const otherUser = req.params.id || '';
+
+    if (otherUser != '' && objectId.isValid(otherUser) && objectId.isValid(req.user._id)) {
+      neo4j.run("MATCH (u:User {id: {authUserIdParam}}) " +
+        "MATCH (o:User {id: {otherUserIdParam}}) " +
+        "MATCH (u)-[r:FRIENDS_WITH]->(o) " +
+        "DELETE r;", {
+          authUserIdParam: req.user._id.toString(),
+          otherUserIdParam: otherUser.toString()
+        }
+      ).catch(err => next(err)).then(result => {
+        res.status(200).json({msg: "Friendship relation successfully removed"});
+        neo4j.close();
+      });
+    } else {
+      res.status(400).json({error: "User not found"});
+    }
+  },
+
+  getFriends(req, res, next) {
+    neo4j.run("MATCH (o:User) " +
+      "MATCH (u:User {id: {authUserIdParam}}) " +
+      "MATCH (u)-[:FRIENDS_WITH]->(o) " +
+      "RETURN o;", {
+        authUserIdParam: req.user._id.toString()
+      }
+    ).catch(err => next(err))
+      .then(parser.parse)
+      .then((parsed) => {
+
+        const userIds = parsed.map((userIds) => mongoose.mongo.ObjectId(userIds.id));
+        return User.find({'_id': {$in: userIds}});
+      })
+      .catch(err => next(err))
+      .then((users) => {
+        res.status(200).json(users);
+        neo4j.close();
+      });
   }
 };
