@@ -111,7 +111,7 @@ module.exports = {
 						.run(
 							"MATCH (u:User)-[rel2:IS_ATTENDING]->(e:Event {id: {eventParam}})-[rel1:CREATED_BY]->(o:User)" +
 							"RETURN collect(u) AS attendees, o AS organiser",
-							{eventParam: sportevent.sportEventId.toString()}
+							{eventParam: sportevent.sportEventId}
 						);
 				})
 				.catch(err => next(err))
