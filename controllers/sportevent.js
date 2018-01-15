@@ -19,7 +19,7 @@ module.exports = {
 				"MERGE (u)-[:IS_ATTENDING]->(e) " +
 				"RETURN u, e;", {
 				idParam: req.user._id.toString(),
-				eventParam: eventId.toString(),
+				eventParam: eventId,
 			}).catch(err => next(err)).then(result => {
 				res.status(201).json({msg: "Event successfully created"});
 				neo4j.close();
