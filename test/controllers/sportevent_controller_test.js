@@ -67,8 +67,67 @@ describe('Add Sportevent', () => {
 });
 
 describe('Attend Sportevent', () => {
-	it('attends a sportevent', (done) => {
-		const testUser = new User({
+	// it('attends a sportevent', (done) => {
+	// 	const testUser = new User({
+	// 		email: 'test@test.com',
+	// 		password: bcrypt.hashSync('test1234'),
+	// 		firstname: '22131tester1,',
+	// 		lastname: 'testing',
+	// 		birth: 1993 - 6 - 24,
+	// 		gender: 'male',
+	// 		address: {
+	// 			street: 'Hinderstraat',
+	// 			number: 1,
+	// 			postal_code: '3077DA',
+	// 			city: 'Rotterdam',
+	// 			state: 'Zuid-Holland',
+	// 			country: 'Nederland',
+	// 			geometry: {
+	// 				coordinates: [4.567827, 51.886838]
+	// 			}
+	// 		}
+	// 	});
+	//	
+	// 	const sportEventId = 1111;
+	//	
+	// 	User.create(testUser)
+	// 		.then((userDb) => {
+	// 			auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
+	// 				session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
+	// 					.then((neoresult1) => {
+	// 						session.run(`CREATE (u:User {id: "${userDb._id}"}) RETURN u;`)
+	// 							.then((neoresult2) => {
+	// 								chai.request(server)
+	// 									.post(`/api/v1/sportevents/${sportEventId}/attend`)
+	// 									.send({email: testUser.email, eventId: sportEventId})
+	// 									.set({Authorization: `Bearer ${accessToken}`})
+	// 									.end((err, res) => {
+	// 										session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[:IS_ATTENDING]->(e) RETURN u,e;`)
+	// 											.then((neoresult3) => {
+	// 												expect(err).to.be.null;
+	// 												expect(res).to.have.status(200);
+	// 												expect(res.body).to.include({msg: "User successfully added to event"});
+	// 												expect(neoresult3.records[0]._fields[0].labels[0]).to.be.equal('User');
+	// 												expect(neoresult3.records[0]._fields[1].labels[0]).to.be.equal('Event');
+	// 												done();
+	// 											});
+	// 									});
+	// 							});
+	// 					});
+	// 			});
+	// 		});
+	// });
+	
+	let attendUser1;
+	let attendUser2;
+	let attendUser1Dbo;
+	let attendUser2Dbo;
+	
+	let sportEventId = 1234;
+	let token;
+	
+	beforeEach((done) => {
+		attendUser1 = new User({
 			email: 'test@test.com',
 			password: bcrypt.hashSync('test1234'),
 			firstname: '22131tester1,',
@@ -88,34 +147,100 @@ describe('Attend Sportevent', () => {
 			}
 		});
 		
-		const sportEventId = 1111;
+		attendUser2 = new User({
+			email: 'test2@test.com',
+			password: bcrypt.hashSync('test12345'),
+			firstname: '22131tester1,',
+			lastname: 'testing',
+			birth: 1993 - 6 - 24,
+			gender: 'male',
+			address: {
+				street: 'Hinderstraat',
+				number: 1,
+				postal_code: '3077DA',
+				city: 'Rotterdam',
+				state: 'Zuid-Holland',
+				country: 'Nederland',
+				geometry: {
+					coordinates: [4.567827, 51.886838]
+				}
+			}
+		});
 		
-		User.create(testUser)
-			.then((userDb) => {
-				auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
-					session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
-						.then((neoresult1) => {
-							session.run(`CREATE (u:User {id: "${userDb._id}"}) RETURN u;`)
-								.then((neoresult2) => {
-									chai.request(server)
-										.post(`/api/v1/sportevents/${sportEventId}/attend`)
-										.send({email: testUser.email, eventId: sportEventId})
-										.set({Authorization: `Bearer ${accessToken}`})
-										.end((err, res) => {
-											session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[:IS_ATTENDING]->(e) RETURN u,e;`)
-												.then((neoresult3) => {
-													expect(err).to.be.null;
-													expect(res).to.have.status(200);
-													expect(res.body).to.include({msg: "User successfully added to event"});
-													expect(neoresult3.records[0]._fields[0].labels[0]).to.be.equal('User');
-													expect(neoresult3.records[0]._fields[1].labels[0]).to.be.equal('Event');
-													done();
-												});
-										});
-								});
-						});
-				});
+		User.create(attendUser1)
+			.then((result) => {
+				attendUser1Dbo = result;
+			})
+			.then(() => {
+				return User.create(attendUser2);
+			})
+			.then((result) => {
+				attendUser2Dbo = result;
+				
+				done();
 			});
+	});
+	
+	function createUsersAndEvents() {
+		return new Promise((resolve, reject) => {
+			session.run(`CREATE (u:User{id: "${attendUser1Dbo._id}"}) RETURN u;`)
+				.then(() => {
+					return session.run(`CREATE (u:User{id: "${attendUser2Dbo._id}"}) RETURN u;`);
+				})
+				.then(() => {
+					return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
+				})
+				.then(() => {
+					return session.run(`MATCH (u:User{id: "${attendUser1Dbo._id}"}) ` +
+						`MATCH (e:Event{id: ${sportEventId}}) ` +
+						`MERGE (e)-[:CREATED_BY]->(u) ` +
+						`MERGE (u)-[:IS_ATTENDING]->(e)` +
+						`RETURN u, e;`
+					);
+				})
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => reject(err));
+		});
+	}
+	
+	function addUserToEvent(userId, eventId) {
+		return new Promise((resolve, reject) => {
+			session.run(`MATCH (u:User{id: "${userId}"}) MATCH (e:Event{id: ${eventId}}) MERGE (u)-[:IS_ATTENDING]->(e) RETURN u, e;`)
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => reject(err));
+		});
+	}
+	
+	it.only('attend a sport event', (done) => {
+		auth.encodeToken(attendUser2Dbo)
+			.catch((err) => next(err))
+			.then((accessToken) => {
+				token = accessToken;
+			})
+			.then(() => {
+				return createUsersAndEvents();
+			})
+			.then(() => {
+				chai.request(server)
+					.post(`/api/v1/sportevents/${sportEventId}/attend`)
+					.send({email: attendUser2.email, eventId: sportEventId})
+					.set({Authorization: `Bearer ${token}`})
+					.end((err, res) => {
+						expect(err).to.be.null;
+						expect(res).to.have.status(200);
+						
+						session.run(`MATCH (u:User{id: "${attendUser2Dbo._id}"}) MATCH (e:Event{id: ${sportEventId}}) MATCH (u)-[:IS_ATTENDING]-(e) RETURN u, e;`)
+							.then((result) => {
+								expect(result.records[0]._fields).to.have.lengthOf(2);
+								
+								done();
+							});
+					});
+			})
 	});
 });
 
