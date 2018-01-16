@@ -14,8 +14,16 @@ const _ = require('lodash');
 chai.use(chai_http);
 
 describe('Add Sportevent', () => {
-	it('add a Sportevent', (done) => {
-		const userTest = new User({
+	let createUser1;
+	let createUser2;
+	let createUser1Dbo;
+	let createUser2Dbo;
+	
+	let sportEventId = 1234;
+	let token;
+	
+	beforeEach((done) => {
+		createUser1 = new User({
 			email: 'test@test.com',
 			password: bcrypt.hashSync('test1234'),
 			firstname: '22131tester1,',
@@ -34,36 +42,81 @@ describe('Add Sportevent', () => {
 				}
 			}
 		});
-		const sportEventId = 12;
 		
-		User.create(userTest)
-			.then((userDb) => {
-				auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
-					session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
-						.then((result1) => {
-							session.run(`CREATE (u:User {id: "${userDb._id}"}) RETURN u;`)
-								.then((result2) => {
-									chai.request(server)
-										.post(`/api/v1/sportevents/`)
-										.send({email: userTest.email, eventId: sportEventId})
-										.set({Authorization: `Bearer ${accessToken}`})
-										.end((err, res) => {
-											session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)<-[:CREATED_BY]-(e) RETURN u,e;`)
-												.then((result3) => {
-													console.log(result3)
-													expect(err).to.be.null;
-													expect(res).to.have.status(201);
-													expect(res.body).to.include({msg: "Event successfully created"});
-													expect(result3.records[0]._fields[0].labels[0]).to.be.equal('User');
-													expect(result3.records[0]._fields[1].labels[0]).to.be.equal('Event');
-													done();
-												});
-										});
-								});
-						})
-				})
+		createUser2 = new User({
+			email: 'test2@test.com',
+			password: bcrypt.hashSync('test12345'),
+			firstname: '22131tester1,',
+			lastname: 'testing',
+			birth: 1993 - 6 - 24,
+			gender: 'male',
+			address: {
+				street: 'Hinderstraat',
+				number: 1,
+				postal_code: '3077DA',
+				city: 'Rotterdam',
+				state: 'Zuid-Holland',
+				country: 'Nederland',
+				geometry: {
+					coordinates: [4.567827, 51.886838]
+				}
+			}
+		});
+		
+		User.create(createUser1)
+			.then((result) => {
+				createUser1Dbo = result;
 			})
-	})
+			.then(() => {
+				return User.create(createUser2);
+			})
+			.then((result) => {
+				createUser2Dbo = result;
+				
+				done();
+			});
+	});
+	
+	function createUsers() {
+		return new Promise((resolve, reject) => {
+			session.run(`CREATE (u:User{id: "${createUser1Dbo._id}"}) RETURN u;`)
+				.then(() => {
+					return session.run(`CREATE (u:User{id: "${createUser2Dbo._id}"}) RETURN u;`);
+				})
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => reject(err));
+		});
+	}
+	
+	it('Add a sport event', (done) => {
+		auth.encodeToken(createUser1Dbo)
+			.catch((err) => next(err))
+			.then((accessToken) => {
+				token = accessToken;
+			})
+			.then(() => {
+				return createUsers();
+			})
+			.then(() => {
+				chai.request(server)
+					.post(`/api/v1/sportevents`)
+					.send({email: createUser1.email, eventId: sportEventId})
+					.set({Authorization: `Bearer ${token}`})
+					.end((err, res) => {
+						expect(err).to.be.null;
+						expect(res).to.have.status(201);
+						
+						session.run(`MATCH (e:Event{id: ${sportEventId}}) RETURN e;`)
+							.then((result) => {
+								expect(result.records).have.lengthOf(1);
+								
+								done();
+							});
+					});
+			})
+	});
 });
 
 describe('Attend Sportevent', () => {
@@ -215,7 +268,7 @@ describe('Attend Sportevent', () => {
 		});
 	}
 	
-	it.only('attend a sport event', (done) => {
+	it('attend a sport event', (done) => {
 		auth.encodeToken(attendUser2Dbo)
 			.catch((err) => next(err))
 			.then((accessToken) => {
