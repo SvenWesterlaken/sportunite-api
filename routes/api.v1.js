@@ -32,9 +32,9 @@ router.put('/changePassword', user.changePassword);
 //Get other users
 router.get('/users/:id?', user.read)
 //User friends endpoints
-router.get('/users/friends/:id?', user.getFriends);
-router.post('/users/friends/:id', user.addFriend);
-router.delete('/users/friends/:id', user.removeFriend);
+router.get('/friends', user.getFriends);
+router.post('/friends/:id', user.addFriend);
+router.delete('/friends/:id', user.removeFriend);
 
 module.exports = router;
 
