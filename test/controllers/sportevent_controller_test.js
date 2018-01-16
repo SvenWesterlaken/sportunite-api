@@ -64,30 +64,23 @@ describe('Add SportEvent', () => {
 		});
 		
 		User.create(createUser1)
-			.then((result) => {
-				createUser1Dbo = result;
-			})
-			.then(() => {
-				return User.create(createUser2);
-			})
+			.then((result) => createUser1Dbo = result)
+			.then(() => User.create(createUser2))
 			.then((result) => {
 				createUser2Dbo = result;
-				
-				done();
-			});
+				return createUsersInNeo4j();
+			})
+      .then(() => {
+		    console.log("Users created in neo4j");
+        done();
+      })
+      .catch((err) => console.log(`neo4j error: ${err}`));
 	});
 	
-	function createUsers() {
-		return new Promise((resolve, reject) => {
-			session.run(`CREATE (u:User{id: "${createUser1Dbo._id}"}) RETURN u;`)
-				.then(() => {
-					return session.run(`CREATE (u:User{id: "${createUser2Dbo._id}"}) RETURN u;`);
-				})
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => reject(err));
-		});
+	function createUsersInNeo4j() {
+		return session.run(`CREATE (u:User{id: "${createUser1Dbo._id}"}) RETURN u;`).then(() => {
+					    return session.run(`CREATE (u:User{id: "${createUser2Dbo._id}"}) RETURN u;`);
+				    })
 	}
 	
 	it('Add a SportEvent', (done) => {
@@ -95,26 +88,22 @@ describe('Add SportEvent', () => {
 			.catch((err) => next(err))
 			.then((accessToken) => {
 				token = accessToken;
-			})
-			.then(() => {
-				return createUsers();
-			})
-			.then(() => {
-				chai.request(server)
-					.post(`/api/v1/sportevents`)
-					.send({email: createUser1.email, eventId: sportEventId})
-					.set({Authorization: `Bearer ${token}`})
-					.end((err, res) => {
-						expect(err).to.be.null;
-						expect(res).to.have.status(201);
-						
-						session.run(`MATCH (e:Event{id: ${sportEventId}}) RETURN e;`)
-							.then((result) => {
-								expect(result.records).have.lengthOf(1);
-								
-								done();
-							});
-					});
+
+        chai.request(server)
+          .post(`/api/v1/sportevents`)
+          .send({email: createUser1.email, eventId: sportEventId})
+          .set({Authorization: `Bearer ${token}`})
+          .end((err, res) => {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+
+            session.run(`MATCH (e:Event{id: ${sportEventId}}) RETURN e;`)
+              .then((result) => {
+                expect(result.records).have.lengthOf(1);
+
+                done();
+              });
+          });
 			})
 	});
 });
@@ -172,49 +161,29 @@ describe('Attend SportEvent', () => {
 		User.create(attendUser1)
 			.then((result) => {
 				attendUser1Dbo = result;
-			})
-			.then(() => {
-				return User.create(attendUser2);
+        return User.create(attendUser2);
 			})
 			.then((result) => {
 				attendUser2Dbo = result;
-				
-				done();
-			});
+				return createUsersAndEvents();
+			})
+      .then(() => {
+        console.log("Users created in neo4j");
+        done();
+      })
+      .catch((err) => console.log(`neo4j error: ${err}`));;
 	});
 	
 	function createUsersAndEvents() {
-		return new Promise((resolve, reject) => {
-			session.run(`CREATE (u:User{id: "${attendUser1Dbo._id}"}) RETURN u;`)
-				.then(() => {
-					return session.run(`CREATE (u:User{id: "${attendUser2Dbo._id}"}) RETURN u;`);
-				})
-				.then(() => {
-					return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
-				})
-				.then(() => {
-					return session.run(`MATCH (u:User{id: "${attendUser1Dbo._id}"}) ` +
-						`MATCH (e:Event{id: ${sportEventId}}) ` +
-						`MERGE (e)-[:CREATED_BY]->(u) ` +
-						`MERGE (u)-[:IS_ATTENDING]->(e)` +
-						`RETURN u, e;`
-					);
-				})
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => reject(err));
-		});
-	}
-	
-	function addUserToEvent(userId, eventId) {
-		return new Promise((resolve, reject) => {
-			session.run(`MATCH (u:User{id: "${userId}"}) MATCH (e:Event{id: ${eventId}}) MERGE (u)-[:IS_ATTENDING]->(e) RETURN u, e;`)
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => reject(err));
-		});
+		return session.run(`CREATE (u:User{id: "${attendUser1Dbo._id}"}) RETURN u;`)
+            .then(() => session.run(`CREATE (u:User{id: "${attendUser2Dbo._id}"}) RETURN u;`))
+            .then(() => session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`))
+            .then(() => session.run(`MATCH (u:User{id: "${attendUser1Dbo._id}"}) ` +
+                `MATCH (e:Event{id: ${sportEventId}}) ` +
+                `MERGE (e)-[:CREATED_BY]->(u) ` +
+                `MERGE (u)-[:IS_ATTENDING]->(e)` +
+                `RETURN u, e;`
+            ))
 	}
 	
 	it('Attend a SportEvent', (done) => {
@@ -222,9 +191,6 @@ describe('Attend SportEvent', () => {
 			.catch((err) => next(err))
 			.then((accessToken) => {
 				token = accessToken;
-			})
-			.then(() => {
-				return createUsersAndEvents();
 			})
 			.then(() => {
 				chai.request(server)
@@ -299,49 +265,48 @@ describe('Leave SportEvent', () => {
 		User.create(leaveUser1)
 			.then((result) => {
 				leaveUser1Dbo = result;
-			})
-			.then(() => {
-				return User.create(leaveUser2);
+        return User.create(leaveUser2);
 			})
 			.then((result) => {
 				leaveUser2Dbo = result;
-				
-				done();
-			});
+				return createUsersAndEvents();
+			})
+      .catch((err) => console.log(`neo4j error: ${err}`))
+      .then(() => {
+        console.log("Users created in neo4j");
+        return addUserToEvent(leaveUser2Dbo._id, sportEventId);
+       })
+      .catch((err) => console.log(`neo4j error: ${err}`))
+		  .then(() => {
+        console.log("Users created in neo4j");
+        done();
+      })
 	});
 	
 	function createUsersAndEvents() {
-		return new Promise((resolve, reject) => {
-			session.run(`CREATE (u:User{id: "${leaveUser1Dbo._id}"}) RETURN u;`)
-				.then(() => {
-					return session.run(`CREATE (u:User{id: "${leaveUser2Dbo._id}"}) RETURN u;`);
-				})
-				.then(() => {
-					return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
-				})
-				.then(() => {
-					return session.run(`MATCH (u:User{id: "${leaveUser1Dbo._id}"}) ` +
-						`MATCH (e:Event{id: ${sportEventId}}) ` +
-						`MERGE (e)-[:CREATED_BY]->(u) ` +
-						`MERGE (u)-[:IS_ATTENDING]->(e)` +
-						`RETURN u, e;`
-					);
-				})
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => reject(err));
-		});
+		return session.run(`CREATE (u:User{id: "${leaveUser1Dbo._id}"}) RETURN u;`)
+            .then(() => {
+              return session.run(`CREATE (u:User{id: "${leaveUser2Dbo._id}"}) RETURN u;`);
+            })
+            .then(() => {
+              return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
+            })
+            .then(() => {
+              return session.run(`MATCH (u:User{id: "${leaveUser1Dbo._id}"}) ` +
+                `MATCH (e:Event{id: ${sportEventId}}) ` +
+                `MERGE (e)-[:CREATED_BY]->(u) ` +
+                `MERGE (u)-[:IS_ATTENDING]->(e)` +
+                `RETURN u, e;`
+              );
+            })
 	}
 	
 	function addUserToEvent(userId, eventId) {
-		return new Promise((resolve, reject) => {
-			session.run(`MATCH (u:User{id: "${userId}"}) MATCH (e:Event{id: ${eventId}}) MERGE (u)-[:IS_ATTENDING]->(e) RETURN u, e;`)
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => reject(err));
-		});
+		return session.run(`
+		  MATCH (u:User{id: "${userId}"}) 
+		  MATCH (e:Event{id: ${eventId}}) 
+		  MERGE (u)-[:IS_ATTENDING]->(e) 
+		  RETURN u, e;`);
 	}
 	
 	it('Leave a SportEvent when user created the event', (done) => {
@@ -351,9 +316,6 @@ describe('Leave SportEvent', () => {
 				token = accessToken;
 			})
 			.then(() => {
-				return createUsersAndEvents();
-			})
-			.then(() => {
 				chai.request(server)
 					.post(`/api/v1/sportevents/${sportEventId}/leave`)
 					.send({email: leaveUser1.email, eventId: sportEventId})
@@ -361,10 +323,14 @@ describe('Leave SportEvent', () => {
 					.end((err, res) => {
 						expect(res).to.have.status(304);
 						
-						session.run(`MATCH (u:User{id: "${leaveUser1Dbo._id}"}) MATCH (e:Event{id: ${sportEventId}}) MATCH (u)-[:IS_ATTENDING]->(e) RETURN u, e;`)
-							.then((result) => {
+						session.run(`
+						  MATCH (u:User{id: "${leaveUser1Dbo._id}"}) 
+						  MATCH (e:Event{id: ${sportEventId}}) 
+						  MATCH (u)-[:IS_ATTENDING]->(e) 
+						  RETURN u, e;`
+            )
+            .then((result) => {
 								expect(result.records[0]._fields).have.lengthOf(2);
-								
 								done();
 							});
 					});
@@ -376,12 +342,6 @@ describe('Leave SportEvent', () => {
 			.catch((err) => next(err))
 			.then((accessToken) => {
 				token = accessToken;
-			})
-			.then(() => {
-				return createUsersAndEvents();
-			})
-			.then(() => {
-				return addUserToEvent(leaveUser2Dbo._id, sportEventId);
 			})
 			.then(() => {
 				chai.request(server)
@@ -457,39 +417,35 @@ describe('Delete SportEvent', () => {
 		User.create(deleteUser1)
 			.then((result) => {
 				deleteUser1Dbo = result;
-			})
-			.then(() => {
-				return User.create(deleteUser2);
+        return User.create(deleteUser2);
 			})
 			.then((result) => {
 				deleteUser2Dbo = result;
-				
-				done();
-			});
+				return createUsersAndEvents();
+			})
+      .catch((err) => console.log(`neo4j error: ${err}`))
+      .then(() => {
+        console.log("Users created in neo4j");
+        done();
+      });
 	});
 	
 	function createUsersAndEvents() {
-		return new Promise((resolve, reject) => {
-			session.run(`CREATE (u:User{id: "${deleteUser1Dbo._id}"}) RETURN u;`)
-				.then(() => {
-					return session.run(`CREATE (u:User{id: "${deleteUser2Dbo._id}"}) RETURN u;`);
-				})
-				.then(() => {
-					return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
-				})
-				.then(() => {
-					return session.run(`MATCH (u:User{id: "${deleteUser1Dbo._id}"}) ` +
-						`MATCH (e:Event{id: ${sportEventId}}) ` +
-						`MERGE (e)-[:CREATED_BY]->(u) ` +
-						`MERGE (u)-[:IS_ATTENDING]->(e)` +
-						`RETURN u, e;`
-					);
-				})
-				.then((res) => {
-					resolve();
-				})
-				.catch((err) => reject(err));
-		});
+			return session.run(`CREATE (u:User{id: "${deleteUser1Dbo._id}"}) RETURN u;`)
+              .then(() => {
+                return session.run(`CREATE (u:User{id: "${deleteUser2Dbo._id}"}) RETURN u;`);
+              })
+              .then(() => {
+                return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
+              })
+              .then(() => {
+                return session.run(`MATCH (u:User{id: "${deleteUser1Dbo._id}"}) ` +
+                  `MATCH (e:Event{id: ${sportEventId}}) ` +
+                  `MERGE (e)-[:CREATED_BY]->(u) ` +
+                  `MERGE (u)-[:IS_ATTENDING]->(e)` +
+                  `RETURN u, e;`
+                );
+              })
 	}
 	
 	it('Delete a SportEvent correct account', (done) => {
@@ -497,9 +453,6 @@ describe('Delete SportEvent', () => {
 			.catch((err) => next(err))
 			.then((accesToken) => {
 				token = accesToken;
-			})
-			.then(() => {
-				return createUsersAndEvents();
 			})
 			.then(() => {
 				chai.request(server)
@@ -525,9 +478,6 @@ describe('Delete SportEvent', () => {
 			.catch((err) => next(err))
 			.then((accessToken) => {
 				token = accessToken;
-			})
-			.then(() => {
-				return createUsersAndEvents();
 			})
 			.then(() => {
 				chai.request(server)
@@ -556,7 +506,6 @@ describe('Test SportEvent controller', () => {
 	};
 	
 	let organisorId;
-	
 	let authToken = '';
 	
 	beforeEach((done) => {
@@ -707,4 +656,6 @@ describe('Test SportEvent controller', () => {
 				done();
 			});
 	});
+
+
 });
