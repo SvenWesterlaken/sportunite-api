@@ -120,146 +120,6 @@ describe('Attend Sportevent', () => {
 });
 
 describe('Leave Sportevent', () => {
-	// it.only('leave a sportevent when user did not create the event', (done) => {
-	// 	const testUser2 = new User({
-	// 		email: 'test@test.com',
-	// 		password: bcrypt.hashSync('test1234'),
-	// 		firstname: '22131tester1,',
-	// 		lastname: 'testing',
-	// 		birth: 1993 - 6 - 24,
-	// 		gender: 'male',
-	// 		address: {
-	// 			street: 'Hinderstraat',
-	// 			number: 1,
-	// 			postal_code: '3077DA',
-	// 			city: 'Rotterdam',
-	// 			state: 'Zuid-Holland',
-	// 			country: 'Nederland',
-	// 			geometry: {
-	// 				coordinates: [4.567827, 51.886838]
-	// 			}
-	// 		}
-	// 	});
-	//	
-	// 	const testUser3 = new User({
-	// 		email: 'test2@test.com',
-	// 		password: bcrypt.hashSync('test12345'),
-	// 		firstname: '22131tester1,',
-	// 		lastname: 'testing',
-	// 		birth: 1993 - 6 - 24,
-	// 		gender: 'male',
-	// 		address: {
-	// 			street: 'Hinderstraat',
-	// 			number: 1,
-	// 			postal_code: '3077DA',
-	// 			city: 'Rotterdam',
-	// 			state: 'Zuid-Holland',
-	// 			country: 'Nederland',
-	// 			geometry: {
-	// 				coordinates: [4.567827, 51.886838]
-	// 			}
-	// 		}
-	// 	});
-	//	
-	// 	const sportEventId = 1111;
-	//	
-	// 	User.create(testUser2)
-	// 		.then((userDb) => {
-	// 			User.create(testUser3)
-	// 				.then((user2Db) => {
-	// 					auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
-	// 						session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
-	// 							.then((neoresult1) => {
-	// 								session.run(`CREATE (u:User {id: "${userDb._id}"}) CREATE (u2:User{id: "${user2Db._id}"}) RETURN u, u2;`)
-	// 									.then((neoresult2) => {
-	// 										session.run(`MATCH (u:User{id: "${user2Db._id}"}) MATCH (e:Event{id: "${sportEventId}"}) MERGE (e)-[:CREATED_BY]->(u)`)
-	// 											.then(() => {
-	// 												session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MERGE(u)-[:IS_ATTENDING]->(e) RETURN u,e;`)
-	// 													.then((neoresult3) => {
-	// 														chai.request(server)
-	// 															.post(`/api/v1/sportevents/${sportEventId}/leave`)
-	// 															.send({email: testUser2.email, eventId: sportEventId})
-	// 															.set({Authorization: `Bearer ${accessToken}`})
-	// 															.end((err, res) => {
-	// 																session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[r:IS_ATTENDING]->(e) DELETE r;`)
-	// 																	.then((neoresult4) => {
-	// 																		session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH (e:Event{id: ${sportEventId}}) MATCH (u)-[:IS_ATTENDING]->(e) RETURN u, e;`)
-	// 																			.then((neoresult5) => {
-	// 																				expect(err).to.be.null;
-	// 																				expect(res).to.have.status(200);
-	// 																				expect(neoresult5.records).to.be.lengthOf(0);
-	// 																				expect(res.body).to.include({msg: "User succesfully removed from event"});
-	// 																				done();
-	// 																			});
-	// 																	});
-	// 															});
-	// 													});
-	// 											});
-	// 									});
-	// 							});
-	// 					});
-	// 				});
-	// 		});
-	// });
-	
-	// it('leave a sportevent when user did create the event', (done) => {
-	// 	const testUser2 = new User({
-	// 		email: 'test@test.com',
-	// 		password: bcrypt.hashSync('test1234'),
-	// 		firstname: '22131tester1,',
-	// 		lastname: 'testing',
-	// 		birth: 1993 - 6 - 24,
-	// 		gender: 'male',
-	// 		address: {
-	// 			street: 'Hinderstraat',
-	// 			number: 1,
-	// 			postal_code: '3077DA',
-	// 			city: 'Rotterdam',
-	// 			state: 'Zuid-Holland',
-	// 			country: 'Nederland',
-	// 			geometry: {
-	// 				coordinates: [4.567827, 51.886838]
-	// 			}
-	// 		}
-	// 	});
-	//	
-	// 	const sportEventId = 1111;
-	//	
-	// 	User.create(testUser2)
-	// 		.then((userDb) => {
-	// 			auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
-	// 				session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
-	// 					.then((neoresult1) => {
-	// 						session.run(`CREATE (u:User {id: "${userDb._id}"}) RETURN u;`)
-	// 							.then((neoresult2) => {
-	// 								session.run(`MATCH (u:User{id: "${userDb._id}"}) MATCH (e:Event{id: "${sportEventId}"}) MERGE (e)-[:CREATED_BY]->(u)`)
-	// 									.then(() => {
-	// 										session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MERGE(u)-[:IS_ATTENDING]->(e) RETURN u,e;`)
-	// 											.then((neoresult3) => {
-	// 												chai.request(server)
-	// 													.post(`/api/v1/sportevents/${sportEventId}/leave`)
-	// 													.send({email: testUser2.email, eventId: sportEventId})
-	// 													.set({Authorization: `Bearer ${accessToken}`})
-	// 													.end((err, res) => {
-	// 														session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[r:IS_ATTENDING]->(e) DELETE r;`)
-	// 															.then((neoresult4) => {
-	// 																session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH (e:Event{id: ${sportEventId}}) MATCH (u)-[:IS_ATTENDING]->(e) RETURN u, e;`)
-	// 																	.then((neoresult5) => {
-	// 																		expect(err).to.be.null;
-	// 																		expect(res).to.have.status(304);
-	// 																		expect(res.body).to.include({msg: "User couldn't be removed from event due to his status"});
-	// 																		done();
-	// 																	});
-	// 															});
-	// 													});
-	// 											});
-	// 									});
-	// 							});
-	// 					});
-	// 			});
-	// 		});
-	// });
-	
 	let leaveUser1;
 	let leaveUser2;
 	let leaveUser1Dbo;
@@ -327,10 +187,10 @@ describe('Leave Sportevent', () => {
 		return new Promise((resolve, reject) => {
 			session.run(`CREATE (u:User{id: "${leaveUser1Dbo._id}"}) RETURN u;`)
 				.then(() => {
-					return session.run(`CREATE (u:User{id: "${leaveUser2Dbo._id}"}) RETURN u;`)
+					return session.run(`CREATE (u:User{id: "${leaveUser2Dbo._id}"}) RETURN u;`);
 				})
 				.then(() => {
-					return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
+					return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
 				})
 				.then(() => {
 					return session.run(`MATCH (u:User{id: "${leaveUser1Dbo._id}"}) ` +
@@ -418,62 +278,16 @@ describe('Leave Sportevent', () => {
 });
 
 describe('Delete Sportevent', () => {
-	it('delete a sportevent correct account', (done) => {
-		const testingUser = new User({
-			email: 'test@test.com',
-			password: bcrypt.hashSync('test1234'),
-			firstname: '22131tester1,',
-			lastname: 'testing',
-			birth: 1993 - 6 - 24,
-			gender: 'male',
-			address: {
-				street: 'Hinderstraat',
-				number: 1,
-				postal_code: '3077DA',
-				city: 'Rotterdam',
-				state: 'Zuid-Holland',
-				country: 'Nederland',
-				geometry: {
-					coordinates: [4.567827, 51.886838]
-				}
-			}
-		});
-		
-		const sportEventId = 1111;
-		
-		User.create(testingUser)
-			.then((userDb) => {
-				auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
-					session.run(`CREATE (e:Event{id: ${sportEventId}}) CREATE (u:User{id:"${userDb._id}"}) RETURN e,u;`)
-						.then((neoresult1) => {
-							// console.log(neoresult1.records[0]._fields[1])
-							session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MERGE (e)-[:CREATED_BY]->(u) RETURN e,u;`)
-								.then((neoresult2) => {
-									// console.log(neoresult2.records[0]._fields[1])
-									chai.request(server)
-										.delete(`/api/v1/sportevents/${sportEventId}`)
-										.send({email: testingUser.email, eventId: sportEventId})
-										.set({Authorization: `Bearer ${accessToken}`})
-										.end((err, res) => {
-											session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH (e)-[:CREATED_BY]->(u) DETACH DELETE e RETURN u`)
-												.then((neoresult3) => {
-													console.log(neoresult3);
-													expect(err).to.be.null;
-													expect(res).to.have.status(200);
-													expect(res.body).to.include({msg: "Sport event successfully deleted"});
-													session.close();
-													done();
-												});
-										})
-									
-								});
-						});
-				});
-			});
-	});
+	let deleteUser1;
+	let deleteUser2;
+	let deleteUser1Dbo;
+	let deleteUser2Dbo;
 	
-	it('delete a sportevent wrong account', (done) => {
-		const user1 = new User({
+	let sportEventId = 1234;
+	let token;
+	
+	beforeEach((done) => {
+		deleteUser1 = new User({
 			email: 'test@test.com',
 			password: bcrypt.hashSync('test1234'),
 			firstname: '22131tester1,',
@@ -493,7 +307,7 @@ describe('Delete Sportevent', () => {
 			}
 		});
 		
-		const user2 = new User({
+		deleteUser2 = new User({
 			email: 'test2@test.com',
 			password: bcrypt.hashSync('test12345'),
 			firstname: '22131tester1,',
@@ -513,36 +327,97 @@ describe('Delete Sportevent', () => {
 			}
 		});
 		
-		const sportEventId = 1111;
-		
-		User.create(user1)
-			.then((userDb) => {
-				User.create(user2)
-					.then((user2Db) => {
-						auth.encodeToken(user2Db).catch((err) => next(err)).then((accessToken) => {
-							session.run(`CREATE (e:Event{id: ${sportEventId}}) CREATE (u:User{id:"${userDb._id}"}) RETURN e,u;`)
-								.then((neoresult1) => {
-									session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MERGE (e)-[:CREATED_BY]->(u) RETURN e,u;`)
-										.then((neoresult2) => {
-											chai.request(server)
-												.delete(`/api/v1/sportevents/${sportEventId}`)
-												.send({email: user1.email, eventId: sportEventId})
-												.set({Authorization: `Bearer ${accessToken}`})
-												.end((err, res) => {
-													session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH (e)-[:CREATED_BY]->(u) DETACH DELETE e RETURN u`)
-														.then((neoresult3) => {
-															expect(res).to.have.status(401);
-															expect(res.body).to.include({msg: "User did not create of the event"});
-															session.close();
-															done();
-														});
-												})
-											
-										});
-								});
-						});
-					});
+		User.create(deleteUser1)
+			.then((result) => {
+				deleteUser1Dbo = result;
+			})
+			.then(() => {
+				return User.create(deleteUser2);
+			})
+			.then((result) => {
+				deleteUser2Dbo = result;
+				
+				done();
 			});
+	});
+	
+	function createUsersAndEvents() {
+		return new Promise((resolve, reject) => {
+			session.run(`CREATE (u:User{id: "${deleteUser1Dbo._id}"}) RETURN u;`)
+				.then(() => {
+					return session.run(`CREATE (u:User{id: "${deleteUser2Dbo._id}"}) RETURN u;`);
+				})
+				.then(() => {
+					return session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`);
+				})
+				.then(() => {
+					return session.run(`MATCH (u:User{id: "${deleteUser1Dbo._id}"}) ` +
+						`MATCH (e:Event{id: ${sportEventId}}) ` +
+						`MERGE (e)-[:CREATED_BY]->(u) ` +
+						`MERGE (u)-[:IS_ATTENDING]->(e)` +
+						`RETURN u, e;`
+					);
+				})
+				.then((res) => {
+					resolve();
+				})
+				.catch((err) => reject(err));
+		});
+	}
+	
+	it('Delete a sportevent correct account', (done) => {
+		auth.encodeToken(deleteUser1Dbo)
+			.catch((err) => next(err))
+			.then((accesToken) => {
+				token = accesToken;
+			})
+			.then(() => {
+				return createUsersAndEvents();
+			})
+			.then(() => {
+				chai.request(server)
+					.delete(`/api/v1/sportevents/${sportEventId}`)
+					.send({email: deleteUser1.email, eventId: sportEventId})
+					.set({Authorization: `Bearer ${token}`})
+					.end((err, res) => {
+						expect(err).to.be.null;
+						expect(res).to.have.status(200);
+						
+						session.run(`MATCH (e:Event{id: ${sportEventId}}) RETURN e;`)
+							.then((result) => {
+								expect(result.records).to.have.lengthOf(0);
+								
+								done();
+							});
+					});
+			})
+	});
+	
+	it('Delete a sportevent wrong account', (done) => {
+		auth.encodeToken(deleteUser2Dbo)
+			.catch((err) => next(err))
+			.then((accessToken) => {
+				token = accessToken;
+			})
+			.then(() => {
+				return createUsersAndEvents();
+			})
+			.then(() => {
+				chai.request(server)
+					.delete(`/api/v1/sportevents/${sportEventId}`)
+					.send({email: deleteUser2.email, eventId: sportEventId})
+					.set({Authorization: `Bearer ${token}`})
+					.end((err, res) => {
+						expect(res).to.have.status(401);
+						
+						session.run(`MATCH (e:Event{id: ${sportEventId}}) RETURN e;`)
+							.then((result) => {
+								expect(result.records).to.have.lengthOf(1); //Event should still exist
+								
+								done();
+							});
+					});
+			})
 	});
 });
 
