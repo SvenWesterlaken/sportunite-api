@@ -176,7 +176,7 @@ describe('User login', () => {
     });
 });
 
-describe('Retrieving user', () => {
+describe.only('Retrieving user', () => {
 
     it('Retrieves the current authenticated user', (done) => {
         const testUser = new User({
@@ -218,6 +218,7 @@ describe('Retrieving user', () => {
     });
 
     // Heeft geen endpoint, /users wordt gebruikt om 1 user op te halen door middel van gegevens uit de token te halen
+
     xit('Retrieving multiple users', (done) => {
         const testUser1 = new User({
             email: 'test@test.com',
@@ -307,8 +308,8 @@ describe('Modifying user', () => {
                 auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
                     userDb.firstname = "UpdatedName";
                     chai.request(server)
-                        .put(`/api/v1/users`)
-                        // .put(`/api/v1/users/${userDb._id}`)
+                        // .put(`/api/v1/users`)
+                        .put(`/api/v1/users/${userDb._id}`)
                         .send(userDb)
                         .set({Authorization: `Bearer ${accessToken}`})
                         .end((err, res) => {
