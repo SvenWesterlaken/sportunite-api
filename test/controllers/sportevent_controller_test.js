@@ -13,7 +13,7 @@ const _ = require('lodash');
 
 chai.use(chai_http);
 
-describe('Add Sportevent', () => {
+describe('Add SportEvent', () => {
 	let createUser1;
 	let createUser2;
 	let createUser1Dbo;
@@ -90,7 +90,7 @@ describe('Add Sportevent', () => {
 		});
 	}
 	
-	it('Add a sport event', (done) => {
+	it('Add a SportEvent', (done) => {
 		auth.encodeToken(createUser1Dbo)
 			.catch((err) => next(err))
 			.then((accessToken) => {
@@ -119,58 +119,7 @@ describe('Add Sportevent', () => {
 	});
 });
 
-describe('Attend Sportevent', () => {
-	// it('attends a sportevent', (done) => {
-	// 	const testUser = new User({
-	// 		email: 'test@test.com',
-	// 		password: bcrypt.hashSync('test1234'),
-	// 		firstname: '22131tester1,',
-	// 		lastname: 'testing',
-	// 		birth: 1993 - 6 - 24,
-	// 		gender: 'male',
-	// 		address: {
-	// 			street: 'Hinderstraat',
-	// 			number: 1,
-	// 			postal_code: '3077DA',
-	// 			city: 'Rotterdam',
-	// 			state: 'Zuid-Holland',
-	// 			country: 'Nederland',
-	// 			geometry: {
-	// 				coordinates: [4.567827, 51.886838]
-	// 			}
-	// 		}
-	// 	});
-	//	
-	// 	const sportEventId = 1111;
-	//	
-	// 	User.create(testUser)
-	// 		.then((userDb) => {
-	// 			auth.encodeToken(userDb).catch((err) => next(err)).then((accessToken) => {
-	// 				session.run(`CREATE (e:Event{id: ${sportEventId}}) RETURN e;`)
-	// 					.then((neoresult1) => {
-	// 						session.run(`CREATE (u:User {id: "${userDb._id}"}) RETURN u;`)
-	// 							.then((neoresult2) => {
-	// 								chai.request(server)
-	// 									.post(`/api/v1/sportevents/${sportEventId}/attend`)
-	// 									.send({email: testUser.email, eventId: sportEventId})
-	// 									.set({Authorization: `Bearer ${accessToken}`})
-	// 									.end((err, res) => {
-	// 										session.run(`MATCH (u:User{id:"${userDb._id}"}) MATCH(e:Event{id: ${sportEventId}}) MATCH(u)-[:IS_ATTENDING]->(e) RETURN u,e;`)
-	// 											.then((neoresult3) => {
-	// 												expect(err).to.be.null;
-	// 												expect(res).to.have.status(200);
-	// 												expect(res.body).to.include({msg: "User successfully added to event"});
-	// 												expect(neoresult3.records[0]._fields[0].labels[0]).to.be.equal('User');
-	// 												expect(neoresult3.records[0]._fields[1].labels[0]).to.be.equal('Event');
-	// 												done();
-	// 											});
-	// 									});
-	// 							});
-	// 					});
-	// 			});
-	// 		});
-	// });
-	
+describe('Attend SportEvent', () => {
 	let attendUser1;
 	let attendUser2;
 	let attendUser1Dbo;
@@ -268,7 +217,7 @@ describe('Attend Sportevent', () => {
 		});
 	}
 	
-	it('attend a sport event', (done) => {
+	it('Attend a SportEvent', (done) => {
 		auth.encodeToken(attendUser2Dbo)
 			.catch((err) => next(err))
 			.then((accessToken) => {
@@ -297,7 +246,7 @@ describe('Attend Sportevent', () => {
 	});
 });
 
-describe('Leave Sportevent', () => {
+describe('Leave SportEvent', () => {
 	let leaveUser1;
 	let leaveUser2;
 	let leaveUser1Dbo;
@@ -395,7 +344,7 @@ describe('Leave Sportevent', () => {
 		});
 	}
 	
-	it('leave a sportevent when user created the event', (done) => {
+	it('Leave a SportEvent when user created the event', (done) => {
 		auth.encodeToken(leaveUser1Dbo)
 			.catch((err) => next(err))
 			.then((accessToken) => {
@@ -422,7 +371,7 @@ describe('Leave Sportevent', () => {
 			});
 	});
 	
-	it('leave a sportevent when user did not create the event', (done) => {
+	it('Leave a SportEvent when user did not create the event', (done) => {
 		auth.encodeToken(leaveUser2Dbo)
 			.catch((err) => next(err))
 			.then((accessToken) => {
@@ -455,7 +404,7 @@ describe('Leave Sportevent', () => {
 	});
 });
 
-describe('Delete Sportevent', () => {
+describe('Delete SportEvent', () => {
 	let deleteUser1;
 	let deleteUser2;
 	let deleteUser1Dbo;
@@ -543,7 +492,7 @@ describe('Delete Sportevent', () => {
 		});
 	}
 	
-	it('Delete a sportevent correct account', (done) => {
+	it('Delete a SportEvent correct account', (done) => {
 		auth.encodeToken(deleteUser1Dbo)
 			.catch((err) => next(err))
 			.then((accesToken) => {
@@ -571,7 +520,7 @@ describe('Delete Sportevent', () => {
 			})
 	});
 	
-	it('Delete a sportevent wrong account', (done) => {
+	it('Delete a SportEvent wrong account', (done) => {
 		auth.encodeToken(deleteUser2Dbo)
 			.catch((err) => next(err))
 			.then((accessToken) => {
@@ -599,7 +548,7 @@ describe('Delete Sportevent', () => {
 	});
 });
 
-describe('Test Sportevent controller', () => {
+describe('Test SportEvent controller', () => {
 	
 	const credentialsUser1 = {
 		email: 'test@test.com',
@@ -723,7 +672,7 @@ describe('Test Sportevent controller', () => {
 		});
 	});
 	
-	it('Retrieving a single sportevent should return a sportevent', (done) => {
+	it('Retrieving a single SportEvent should return a SportEvent', (done) => {
 		chai.request(server)
 			.get(`/api/v1/sportevents/1`)
 			.set({Authorization: `Bearer ${authToken}`})
@@ -743,7 +692,7 @@ describe('Test Sportevent controller', () => {
 			});
 	});
 	
-	it('GET /sportevents/:id Retrieving multiple sportevents should return a sportevent', (done) => {
+	it('GET /sportevents/:id Retrieving multiple SportEvents should return a SportEvent', (done) => {
 		chai.request(server)
 			.get(`/api/v1/sportevents`)
 			.set({Authorization: `Bearer ${authToken}`})
