@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV === 'test') {
   result = dotenv.config();
 
   if (result.error) {
