@@ -1,9 +1,11 @@
 const dotenv = require('dotenv');
 
-result = dotenv.config();
+if (process.env.NODE_ENV !== 'test') {
+  result = dotenv.config();
 
-if (result.error) {
-  throw result.error;
+  if (result.error) {
+    throw result.error;
+  }
 }
 
 const env = {
