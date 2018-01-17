@@ -1,7 +1,6 @@
 const dotenv = require('dotenv');
 
 if (process.env.NODE_ENV === 'test') {
-  //Disable if in travis test api
   result = dotenv.config();
 
   if (result.error) {
