@@ -4,6 +4,7 @@ branches:
   - feature/travis-test
 
 sudo: required
+dist: trusty
 
 addons:
   apt:
@@ -22,9 +23,9 @@ services:
   - mongodb
   # - neo4j
 
-before_install:
-  - >
-    curl -H "Content-Type: application/json" -X POST -d '{"password":"admin"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
+# before_install:
+#   - >
+#     curl -H "Content-Type: application/json" -X POST -d '{"password":"admin"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
 
 before_script:
   - sleep 15
