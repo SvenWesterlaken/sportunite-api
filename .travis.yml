@@ -1,6 +1,7 @@
 branches:
   - master
   - feature/travis
+  - feature/travis-test
 
 language: node_js
 
