@@ -21,11 +21,10 @@ node_js:
 
 services:
   - mongodb
-  - neo4j
+  # - neo4j
 
 before_install:
-  - >
-    curl -H "Content-Type: application/json" -X POST -d '{"password":"admin"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
+  - curl -vX POST http://neo4j:neo4j@localhost:7474/user/neo4j/password -d"password=j4oen"
 
 before_script:
   - sleep 15
