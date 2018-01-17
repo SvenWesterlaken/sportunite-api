@@ -192,25 +192,52 @@ module.exports = {
 	},
 	
 	remove(req, res, next) {
-		let eventId = req.body.eventId || '';
+		console.log('remove');
+		let eventId = req.params.id || '';
 		let userId = req.user._id || '';
 		
+		console.log(eventId);
+		
 		if (objectId.isValid(userId)) {
-			if (eventId != '')
-				neo4j.run("MATCH (u:User{id:{idParam}}) " +
-					"MATCH (e:Event{id:{eventParam}}) " +
-					"MATCH (e)-[:CREATED_BY]->(u) " +
-					"DETACH DELETE e " +
-					"RETURN u", {
-					idParam: req.user._id.toString(),
-					eventParam: eventId
-				}).catch(err => next(err)).then(result => {
-					if (result.records.length == 0) {
-						res.status(401).json({msg: "User did not create of the event"})
-					}
-					res.status(200).json({msg: "Sport event successfully deleted"});
-					neo4j.close();
-				})
+			// if (eventId != '')
+			// 	neo4j.run("MATCH (u:User{id:{idParam}}) " +
+			// 		"MATCH (e:Event{id:{eventParam}}) " +
+			// 		"MATCH (e)-[:CREATED_BY]->(u) " +
+			// 		"DETACH DELETE e " +
+			// 		"RETURN u", {
+			// 		idParam: req.user._id.toString(),
+			// 		eventParam: eventId
+			// 	}).catch(err => next(err)).then(result => {
+			// 		if (result.records.length == 0) {
+			// 			res.status(401).json({msg: "User did not create of the event"})
+			// 		}
+			// 		res.status(200).json({msg: "Sport event successfully deleted"});
+			// 		neo4j.close();
+			// 	})
+			
+			if (eventId != '') {
+				neo4j.run(`MATCH (u:User{id: "${req.user._id.toString()}"}) ` +
+					`MATCH (e:Event{id: ${eventId}}) ` +
+					`MATCH (e)-[:CREATED_BY]->(u) ` +
+					`DETACH DELETE e ` +
+					`RETURN u`)
+					.catch(err => next(err))
+					.then((result) => {
+						console.log(result);
+						if (result.records.length == 0) {
+							res.status(401).json({msg: "User did not create of the event"});
+						} else {
+							axios.delete(config.sportunite_asp_api.url + `/sportevents/${eventId}`)
+								.catch(err => next(err))
+								.then((response) => {
+									console.log('Backend response: ' + response);
+									
+									neo4j.close();
+									res.status(200).json({msg: "Sport event successfully deleted"});
+								});
+						}
+					});
+			}
 		} else {
 			res.status(422).json({error: "Invalid user id"});
 		}
