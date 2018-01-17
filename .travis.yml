@@ -1,5 +1,6 @@
 branches:
   - master
+  - feature/travis
 
 language: node_js
 
