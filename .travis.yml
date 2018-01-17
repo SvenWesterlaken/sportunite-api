@@ -3,7 +3,6 @@ branches:
   - feature/travis
   - feature/travis-test
 
-dist: trusty
 sudo: required
 
 addons:
