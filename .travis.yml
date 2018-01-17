@@ -22,8 +22,8 @@ services:
   - mongodb
   # - neo4j
 
-before_install:
-  - curl -vX POST http://neo4j:neo4j@localhost:7474/user/neo4j/password -d"password=j4oen"
+# before_install:
+#   - curl -vX POST http://neo4j:neo4j@localhost:7474/user/neo4j/password -d"password=j4oen"
 
 before_script:
   - sleep 15
