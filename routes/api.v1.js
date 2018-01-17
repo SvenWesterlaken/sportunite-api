@@ -33,7 +33,6 @@ router.put('/changePassword', user.changePassword);
 router.get('/users/:id?', user.read)
 //User friends endpoints
 router.get('/friends/:id?', user.getFriends);
-router.get('/friends/:id?/', user.getEvents)
 router.post('/friends/:id', user.addFriend);
 router.delete('friends/:id', user.removeFriend);
 

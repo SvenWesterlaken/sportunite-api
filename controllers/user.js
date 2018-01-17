@@ -250,26 +250,5 @@ module.exports = {
         res.status(200).json(users);
         neo4j.close();
       });
-  },
-
-    getEvents(req, res, next) {
-        neo4j.run("MATCH (e:Event) " +
-            "MATCH (u:User {id: {5authUserIdParam}}) " +
-            "MATCH (u)-[:IS_ATTENDING]->(e) " +
-            "RETURN e;", {
-                authUserIdParam: req.user._id.toString()
-            }
-        ).catch(err => next(err))
-            .then(parser.parse)
-            .then((parsed) => {
-
-                const userIds = parsed.map((userIds) => mongoose.mongo.ObjectId(userIds.id));
-                return User.find({'_id': {$in: userIds}});
-            })
-            .catch(err => next(err))
-            .then((users) => {
-                res.status(200).json(users);
-                neo4j.close();
-            });
-    }
+  }
 };
