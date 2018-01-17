@@ -125,18 +125,17 @@ module.exports = {
 
   //Deleting a user
   delete(req, res, next) {
-    const userId = req.user._id;
-
-    if (objectId.isValid(userId)) {
-
+    if (objectId.isValid(req.user._id)) {
       neo4j
         .run(
-          "MATCH (u:User{id: {idParam}})" +
+          "MATCH (u:User{id: {UserIdParam}})" +
           "OPTIONAL MATCH (u)-[rel]-(friend:User)" +
           "DELETE rel, u"
-        )
+        , {
+        UserIdParam: req.user._id.toString()
+      })
         .then(() => {
-          User.findByIdAndRemove(userId)
+          User.findByIdAndRemove(req.user._id)
             .then((userDb) => {
               if (userDb) {
                 res.status(200).send(userDb);
@@ -145,8 +144,13 @@ module.exports = {
               }
             }).catch((err) => next(err));
         })
-        .catch((err) => next(err));
-
+        .catch((err) => {
+          if (err.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+            res.status(409).json({error: "User is connected to events"});
+          } else {
+            next(err);
+          }
+        });
     } else {
       res.status(422).json({error: "Invalid user id"});
     }
