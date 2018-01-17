@@ -3,6 +3,17 @@ branches:
   - feature/travis
   - feature/travis-test
 
+dist: trusty
+sudo: required
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb https://debian.neo4j.org/repo stable/'
+        key_url: 'https://debian.neo4j.org/neotechnology.gpg.key'
+    packages:
+      - neo4j
+
 language: node_js
 
 node_js:
@@ -11,6 +22,10 @@ node_js:
 services:
   - mongodb
   - neo4j
+
+before_install:
+  - >
+    curl -H "Content-Type: application/json" -X POST -d '{"password":"admin"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
 
 before_script:
   - sleep 15
