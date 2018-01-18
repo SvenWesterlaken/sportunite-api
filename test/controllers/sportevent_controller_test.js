@@ -10,6 +10,8 @@ const User = require('../../models/user');
 const neo4j = require('../../db/neo4j');
 const parser = require('parse-neo4j');
 const _ = require('lodash');
+const nock = require('nock');
+const config = require('../../config/env');
 
 chai.use(chai_http);
 
@@ -414,6 +416,11 @@ describe('Delete SportEvent', () => {
 			}
 		});
 		
+		nock(config.sportunite_asp_api.host)
+			.delete(`/api/sportevents/${sportEventId}`)
+			.reply(200, 'SportEvent deleted')
+			.log((data) => console.log("NOCK LOG: " + data));
+		
 		User.create(deleteUser1)
 			.then((result) => {
 				deleteUser1Dbo = result;
@@ -448,7 +455,7 @@ describe('Delete SportEvent', () => {
               })
 	}
 	
-	it('Delete a SportEvent correct account', (done) => {
+	it.only('Delete a SportEvent correct account', (done) => {
 		auth.encodeToken(deleteUser1Dbo)
 			.catch((err) => next(err))
 			.then((accesToken) => {
@@ -473,7 +480,7 @@ describe('Delete SportEvent', () => {
 			})
 	});
 	
-	it('Delete a SportEvent wrong account', (done) => {
+	it.only('Delete a SportEvent wrong account', (done) => {
 		auth.encodeToken(deleteUser2Dbo)
 			.catch((err) => next(err))
 			.then((accessToken) => {
