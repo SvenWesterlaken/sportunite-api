@@ -628,4 +628,96 @@ describe('Friendship relation', () => {
       });
     });
   });
+
+  it('Gets all users with a friendship relation with the submitted user', (done) => {
+    const testUser1 = new User({
+      email: 'test@test.com',
+      password: bcrypt.hashSync('test1234'),
+      firstname: '22131tester1,',
+      lastname: 'testing',
+      birth: 1993 - 6 - 24,
+      gender: 'male',
+      address: {
+        street: 'Hinderstraat',
+        number: 1,
+        postal_code: '3077DA',
+        city: 'Rotterdam',
+        state: 'Zuid-Holland',
+        country: 'Nederland',
+        geometry: {
+          coordinates: [4.567827, 51.886838]
+        }
+      }
+    });
+
+    const testUser2 = new User({
+      email: 'SecondTestEmail@test.com',
+      password: bcrypt.hashSync('test1234'),
+      firstname: '22131tester1,',
+      lastname: 'testing',
+      birth: 1993 - 6 - 24,
+      gender: 'male',
+      address: {
+        street: 'Hinderstraat',
+        number: 1,
+        postal_code: '3077DA',
+        city: 'Rotterdam',
+        state: 'Zuid-Holland',
+        country: 'Nederland',
+        geometry: {
+          coordinates: [4.567827, 51.886838]
+        }
+      }
+    });
+
+    const testUser3 = new User({
+      email: 'SecondTestEmail@test.com',
+      password: bcrypt.hashSync('test1234'),
+      firstname: '22131tester1,',
+      lastname: 'testing',
+      birth: 1993 - 6 - 24,
+      gender: 'male',
+      address: {
+        street: 'Hinderstraat',
+        number: 1,
+        postal_code: '3077DA',
+        city: 'Rotterdam',
+        state: 'Zuid-Holland',
+        country: 'Nederland',
+        geometry: {
+          coordinates: [4.567827, 51.886838]
+        }
+      }
+    });
+
+    User.create(testUser1).then((userDb1) => {
+      User.create(testUser2).then((userDb2) => {
+        User.create(testUser3).then((userDb3) => {
+          auth.encodeToken(userDb1).catch((err) => next(err)).then((accessToken) => {
+
+            session.run(
+              'CREATE (u1:User {id: {id1}})' +
+              'CREATE (u2:User {id: {id2}})' +
+              'CREATE (u3:User {id: {id3}})' +
+              'CREATE (u2)-[:FRIENDS_WITH]->(u1)' +
+              'CREATE (u2)-[:FRIENDS_WITH]->(u3)',
+              {id1: userDb1._id.toString(), id2: userDb2._id.toString(), id3: userDb3._id.toString()}).then(() => {
+              session.close();
+            }).then(() => {
+              chai.request(server)
+                .get(`/api/v1/users/${userDb2._id}/friends`)
+                .set({Authorization: `Bearer ${accessToken}`})
+                .end((err, res) => {
+
+                  expect(err).to.be.null;
+                  expect(res).to.have.status(200);
+                  expect(res.body).to.be.a('array').and.have.lengthOf(1);
+                  done();
+                });
+            });
+          });
+        });
+      });
+    });
+  });
 });
