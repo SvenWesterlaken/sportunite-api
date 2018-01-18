@@ -1,6 +1,19 @@
 branches:
   - master
   - feature/travis
+  - feature/travis-test
+
+sudo: required
+dist: trusty
+group: deprecated-2017Q4
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb https://debian.neo4j.org/repo stable/'
+        key_url: 'https://debian.neo4j.org/neotechnology.gpg.key'
+    packages:
+      - neo4j
 
 language: node_js
 
@@ -9,10 +22,12 @@ node_js:
 
 services:
   - mongodb
-  - neo4j
 
 before_script:
   - sleep 15
+
+script:
+  - npm run cover
 
 after_succes:
   - npm run coveralls
@@ -20,5 +35,5 @@ after_succes:
 deploy:
   provider: heroku
   api_key:
-    secure: process.env.HEROKU_API_KEY
+    secure: a53c5b99-dd96-422b-a5d0-a6653fa94b39
   app: sportuniteb3-angular
