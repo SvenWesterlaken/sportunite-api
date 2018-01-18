@@ -25,10 +25,17 @@ router.delete('/sportevents/:id', sportevent.remove);
 
 //User profile endpoints
 router.get('/profile', user.profile)
-// router.get('/users', user.read); Old request may be reused with /:id
 router.put('/users', user.update);
 router.delete('/users', user.delete);
+//Changing password
 router.put('/changePassword', user.changePassword);
+//Get other users
+router.get('/users/:id/friends', user.getUserFriends);
+router.get('/users/:id?', user.read)
+//User friends endpoints
+router.get('/friends', user.getFriends);
+router.post('/friends/:id', user.addFriend);
+router.delete('/friends/:id', user.removeFriend);
 
 module.exports = router;
 
