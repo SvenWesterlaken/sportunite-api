@@ -109,7 +109,7 @@ module.exports = {
     const userId = req.user._id;
     const user = req.body;
 
-    if (objectId.isValid(userId) && (user._id === undefined || user._id === userId)) {
+    if (objectId.isValid(userId) && (user._id === undefined || user._id === userId.toString())) {
       User.findByIdAndUpdate(userId, user)
         .then((userDb) => {
           if (userDb) {
@@ -131,9 +131,9 @@ module.exports = {
           "MATCH (u:User{id: {UserIdParam}})" +
           "OPTIONAL MATCH (u)-[rel]-(friend:User)" +
           "DELETE rel, u"
-        , {
-        UserIdParam: req.user._id.toString()
-      })
+          , {
+            UserIdParam: req.user._id.toString()
+          })
         .then(() => {
           User.findByIdAndRemove(req.user._id)
             .then((userDb) => {
