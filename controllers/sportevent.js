@@ -203,22 +203,6 @@ module.exports = {
 		console.log(eventId);
 		
 		if (objectId.isValid(userId)) {
-			// if (eventId != '')
-			// 	neo4j.run("MATCH (u:User{id:{idParam}}) " +
-			// 		"MATCH (e:Event{id:{eventParam}}) " +
-			// 		"MATCH (e)-[:CREATED_BY]->(u) " +
-			// 		"DETACH DELETE e " +
-			// 		"RETURN u", {
-			// 		idParam: req.user._id.toString(),
-			// 		eventParam: eventId
-			// 	}).catch(err => next(err)).then(result => {
-			// 		if (result.records.length == 0) {
-			// 			res.status(401).json({msg: "User did not create of the event"})
-			// 		}
-			// 		res.status(200).json({msg: "Sport event successfully deleted"});
-			// 		neo4j.close();
-			// 	})
-			
 			if (eventId != '') {
 				neo4j.run(`MATCH (u:User{id: "${req.user._id.toString()}"}) ` +
 					`MATCH (e:Event{id: ${eventId}}) ` +
