@@ -38,8 +38,12 @@ module.exports = {
 		let finalSportEvents = [];
 		
 		axios.get(config.sportunite_asp_api.url + `/sportevents/${eventId}`)
-			.catch(err => next(err))
+			.catch(err => {
+        console.log('Sportevent ERROR: ' + err);
+				next(err)
+      })
 			.then(response => {
+				console.log('sportevent response: ' + JSON.stringify(response.data));
 				if (eventId === '') { // if eventid == '' it means a get request has been send for all sportevents
 					const resultAsSportevents = response.data._embedded.sportevents || '';
 					
@@ -111,7 +115,7 @@ module.exports = {
 						.run(
 							"MATCH (u:User)-[rel2:IS_ATTENDING]->(e:Event {id: {eventParam}})-[rel1:CREATED_BY]->(o:User)" +
 							"RETURN collect(u) AS attendees, o AS organiser",
-							{eventParam: sportevent.sportEventId.toString()}
+							{eventParam: sportevent.sportEventId}
 						);
 				})
 				.catch(err => next(err))
