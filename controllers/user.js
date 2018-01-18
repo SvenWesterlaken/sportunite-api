@@ -254,5 +254,28 @@ module.exports = {
         res.status(200).json(users);
         neo4j.close();
       });
+  },
+
+  getUserFriends(req, res, next) {
+    const userId = req.params.id || '';
+    neo4j.run("MATCH (o:User) " +
+      "MATCH (u:User {id: {userIdParam}}) " +
+      "MATCH (u)-[:FRIENDS_WITH]->(o) " +
+      "RETURN o;", {
+        userIdParam: userId
+      }
+    ).catch(err => next(err))
+      .then(parser.parse)
+      .then((parsed) => {
+
+        const userIds = parsed.map((userIds) => mongoose.mongo.ObjectId(userIds.id));
+        return User.find({'_id': {$in: userIds}});
+      })
+      .catch(err => next(err))
+      .then((users) => {
+        users = users.filter(user => user._id.toString() !== (req.user._id.toString()));
+        res.status(200).json(users);
+        neo4j.close();
+      });
   }
 };

@@ -30,6 +30,7 @@ router.delete('/users', user.delete);
 //Changing password
 router.put('/changePassword', user.changePassword);
 //Get other users
+router.get('/users/:id/friends', user.getUserFriends);
 router.get('/users/:id?', user.read)
 //User friends endpoints
 router.get('/friends', user.getFriends);
