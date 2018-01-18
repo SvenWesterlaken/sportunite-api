@@ -9,7 +9,8 @@ const auth = require('../../auth/token');
 const User = require('../../models/user');
 const neo4j = require('../../db/neo4j');
 const parser = require('parse-neo4j');
-const _ = require('lodash');
+const nock = require('nock');
+const config = require('../../config/env');
 
 chai.use(chai_http);
 
@@ -309,7 +310,7 @@ describe('Delete Sportevent', () => {
 });
 
 describe('Test Sportevent controller', () => {
-	
+
 	const credentialsUser1 = {
 		email: 'test@test.com',
 		password: 'test1234',
@@ -318,6 +319,91 @@ describe('Test Sportevent controller', () => {
 	let organisorId;
 	
 	let authToken = '';
+
+  const sporteventResponse = {
+    "sportEventId": 6,
+    "name": "GVoetbal",
+    "minAttendees": 2,
+    "maxAttendees": 20,
+    "description": "Alleen mensen met een lichamelijke handicap mogen meedoen",
+    "eventStartTime": "2018-01-16T14:00:00",
+    "eventEndTime": "2018-01-16T15:00:00",
+    "sportId": 1,
+    "reservationId": 5,
+  };
+
+  const sporteventResponse2 = {
+    "sportEventId": 7,
+    "name": "GVoetbal",
+    "minAttendees": 2,
+    "maxAttendees": 20,
+    "description": "Alleen mensen met een lichamelijke handicap mogen meedoen",
+    "eventStartTime": "2018-01-16T14:00:00",
+    "eventEndTime": "2018-01-16T15:00:00",
+    "sportId": 2,
+    "reservationId": 6,
+  };
+
+  const sportResponse = {
+    "sportId": 1,
+    "name": "Voetbal"
+  };
+
+  const sportResponse2 = {
+    "sportId": 2,
+    "name": "Basketbal"
+  };
+
+  const aSportevents = {
+    "_embedded": {
+      "sportevents": [
+        sporteventResponse,
+        sporteventResponse2
+      ]
+    }
+  };
+
+  const reservationResponse = {
+    "reservationId": 5,
+    "startTime": "2018-01-16T14:00:00",
+    "timeFinish": "2018-01-16T15:00:00",
+    "definite": false,
+    "sportEventId": 6,
+    "hallId": 1,
+  };
+
+  const reservationResponse2 = {
+    "reservationId": 6,
+    "startTime": "2018-01-16T14:00:00",
+    "timeFinish": "2018-01-16T15:00:00",
+    "definite": false,
+    "sportEventId": 7,
+    "hallId": 1,
+  };
+
+  const hallResponse = {
+    "hallId": 1,
+    "name": "Hall 1",
+    "size": "Groot",
+    "price": 10,
+    "available": true,
+    "buildingId": 3,
+  };
+
+  const buildingResponse = {
+    "buildingId": 3,
+    "name": "Sport Fit",
+    "address": {
+      "addressId": 3,
+      "streetName": "Dijkweg",
+      "houseNumber": 33,
+      "suffix": null,
+      "zipCode": "4814CC",
+      "city": "Breda",
+      "state": "Noord-Brabant",
+      "country": "Nederland"
+    }
+  };
 	
 	beforeEach((done) => {
 		const testUser1 = new User({
@@ -379,50 +465,74 @@ describe('Test Sportevent controller', () => {
 				}
 			}
 		});
-		
+
+    // Mock the http requests send by axios to the ASP.NET API for SportUnite
+    nock(config.sportunite_asp_api.host)
+      .get(`/api/sportevents/${sporteventResponse.sportEventId}`)
+      .reply(200, sporteventResponse)
+      .get(`/api/sportevents/${sporteventResponse2.sportEventId}`)
+      .reply(200, sporteventResponse2)
+      .get(`/api/sports/${sportResponse.sportId}`)
+      .reply(200, sportResponse)
+      .get(`/api/sports/${sportResponse2.sportId}`)
+      .reply(200, sportResponse2)
+      .get(`/api/reservations/${reservationResponse.reservationId}`)
+      .reply(200, reservationResponse)
+      .get(`/api/reservations/${reservationResponse2.reservationId}`)
+      .reply(200, reservationResponse2)
+      .get(`/api/halls/${hallResponse.hallId}`)
+      .times(2)
+      .reply(200, hallResponse)
+      .get(`/api/buildings/${buildingResponse.buildingId}`)
+      .times(2)
+      .reply(200, buildingResponse)
+      .get(`/api/sportevents/`)
+      .reply(200, aSportevents)
+      .log((data) => console.log("NOCK LOG: " + data));
+
+    // create users and make them organise and attend events
 		User.create(testUser1).then((result1) => {
 			console.log('testuser1: ' + JSON.stringify(result1));
 			auth.encodeToken(result1).catch((err) => next(err)).then((accessToken) => {
 				authToken = accessToken;
-				
 				testUser1._id = result1._id;
-				User.create(testUser2).then((result2) => {
-					console.log('testuser2: ' + JSON.stringify(result2));
-					testUser2._id = result2._id;
-					User.create(testUser3).then((result3) => {
-						console.log('testuser3: ' + JSON.stringify(result3));
-						testUser3._id = result3._id;
-					}).then(() => {
-						const eventId = '1';
-						const evenId2 = '2';
-						const attendee1Id = testUser1._id.toString();
-						const attendee2Id = testUser2._id.toString();
-						const attendee3Id = testUser3._id.toString();
-						organisorId = attendee3Id;
-						
-						neo4j.run(
-							"MERGE (attendee1:User {id: {attendee1Param}})" +
-							"MERGE (e:Event {id: {eventParam}})" +
-							"MERGE (e2:Event {id: {event2Param}})" +
-							"MERGE (attendee1)-[:IS_ATTENDING]->(e)" +
-							"MERGE (attendee1)-[:IS_ATTENDING]->(e2)" +
-							"MERGE (attendee2:User {id: {attendee2Param}})-[:IS_ATTENDING]->(e)" +
-							"MERGE (attendee3:User {id: {attendee3Param}})<-[:CREATED_BY]-(e)" +
-							"MERGE (attendee3)<-[:CREATED_BY]-(e2)" +
-							"MERGE (attendee3)-[:IS_ATTENDING]->(e)" +
-							"MERGE (attendee3)-[:IS_ATTENDING]->(e2)" +
-							"RETURN attendee1, attendee2, attendee3, e, e2;",
-							{
-								attendee1Param: attendee1Id,
-								attendee2Param: attendee2Id,
-								attendee3Param: attendee3Id,
-								eventParam: eventId,
-								event2Param: evenId2
-							}
-						).catch((err) => console.log('error: ' + err)).then(
-							parser.parse
-						).then(
-							(parsed) => {
+					User.create(testUser2).then((result2) => {
+						console.log('testuser2: ' + JSON.stringify(result2));
+						testUser2._id = result2._id;
+
+						User.create(testUser3).then((result3) => {
+							console.log('testuser3: ' + JSON.stringify(result3));
+							testUser3._id = result3._id;
+						}).then(() => {
+							const eventId = '1';
+							const evenId2 = '2';
+							const attendee1Id = testUser1._id.toString();
+							const attendee2Id = testUser2._id.toString();
+							const attendee3Id = testUser3._id.toString();
+							organisorId = attendee3Id;
+
+							neo4j.run(
+								"MERGE (attendee1:User {id: {attendee1Param}})" +
+								"MERGE (e:Event {id: {eventParam}})" +
+								"MERGE (e2:Event {id: {event2Param}})" +
+								"MERGE (attendee1)-[:IS_ATTENDING]->(e)" +
+								"MERGE (attendee1)-[:IS_ATTENDING]->(e2)" +
+								"MERGE (attendee2:User {id: {attendee2Param}})-[:IS_ATTENDING]->(e)" +
+								"MERGE (attendee3:User {id: {attendee3Param}})<-[:CREATED_BY]-(e)" +
+								"MERGE (attendee3)<-[:CREATED_BY]-(e2)" +
+								"MERGE (attendee3)-[:IS_ATTENDING]->(e)" +
+								"MERGE (attendee3)-[:IS_ATTENDING]->(e2)" +
+								"RETURN attendee1, attendee2, attendee3, e, e2;",
+								{
+									attendee1Param: attendee1Id,
+									attendee2Param: attendee2Id,
+									attendee3Param: attendee3Id,
+									eventParam: sporteventResponse.sportEventId,
+									event2Param: sporteventResponse2.sportEventId
+								}
+							).catch((err) => console.log('error: ' + err)).then(
+								parser.parse
+							).then((parsed) => {
 								console.log("parsed test result: " + JSON.stringify(parsed));
 								done();
 							})
@@ -431,40 +541,44 @@ describe('Test Sportevent controller', () => {
 			});
 		});
 	});
+
+  it('Retrieving a single sportevent should return a sportevent', (done) => {
+    chai.request(server)
+      .get(`/api/v1/sportevents/${sporteventResponse.sportEventId}`)
+      .set({Authorization: `Bearer ${authToken}`})
+      .end((err, res) => {
+        console.log("Error: " + JSON.stringify(err));
+
+        expect(err).to.be.null;
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('object');
+        expect(res.body.organisor).to.include({_id: `${organisorId}`});
+        expect(res.body.attendees).to.be.an('array').and.have.lengthOf(3);
+        expect(res.body.sport).to.be.an('object');
+        expect(res.body.reservation).to.be.an('object');
+        expect(res.body.reservation.hall).to.be.an('object');
+        expect(res.body.reservation.hall.building).to.be.an('object');
+        done();
+      });
+  });
+
+  it('GET /sportevents/ Retrieving multiple sportevents should return a sportevent', (done) => {
+    chai.request(server)
+      .get(`/api/v1/sportevents`)
+      .set({Authorization: `Bearer ${authToken}`})
+      .end((err, res) => {
+        console.log("Error: " + JSON.stringify(err));
+        console.log("Response: " + JSON.stringify(res.body));
+
+
+        expect(err).to.be.null;
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array').and.have.lengthOf(2);
+        expect(res.body[1].organisor).to.include({_id: `${organisorId}`});
+        expect(res.body[1].attendees).to.be.an('array').and.have.lengthOf(2);
+        done();
+      });
+  });
 	
-	it('Retrieving a single sportevent should return a sportevent', (done) => {
-		chai.request(server)
-			.get(`/api/v1/sportevents/1`)
-			.set({Authorization: `Bearer ${authToken}`})
-			.end((err, res) => {
-				console.log("Error: " + JSON.stringify(err));
-				
-				expect(err).to.be.null;
-				expect(res).to.have.status(200);
-				expect(res.body).to.be.an('object');
-				expect(res.body.organisor).to.include({_id: `${organisorId}`});
-				expect(res.body.attendees).to.be.an('array').and.have.lengthOf(3);
-				expect(res.body.sport).to.be.an('object');
-				expect(res.body.reservation).to.be.an('object');
-				expect(res.body.reservation.hall).to.be.an('object');
-				expect(res.body.reservation.hall.building).to.be.an('object');
-				done();
-			});
-	});
-	
-	it('GET /sportevents/:id Retrieving multiple sportevents should return a sportevent', (done) => {
-		chai.request(server)
-			.get(`/api/v1/sportevents`)
-			.set({Authorization: `Bearer ${authToken}`})
-			.end((err, res) => {
-				console.log("Error: " + JSON.stringify(err));
-				
-				expect(err).to.be.null;
-				expect(res).to.have.status(200);
-				expect(res.body).to.be.an('array').and.have.lengthOf(2);
-				expect(res.body[1].organisor).to.include({_id: `${organisorId}`});
-				expect(res.body[1].attendees).to.be.an('array').and.have.lengthOf(2);
-				done();
-			});
-	});
+
 });

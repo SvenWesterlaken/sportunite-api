@@ -33,7 +33,8 @@ env.neo4j = {
 }
 
 env.sportunite_asp_api = {
-  url: process.env.SPORTUNITE_ASP_API || ''
+  url: process.env.SPORTUNITE_ASP_API || '',
+  host: process.env.SPORTUNITE_ASP_API_HOST || ''
 }
 
 module.exports = env;
