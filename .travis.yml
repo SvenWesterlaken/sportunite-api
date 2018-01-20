@@ -1,24 +1,18 @@
 branches:
-  - master
-  - feature/travis
-
+- master
+- feature/travis
 language: node_js
-
 node_js:
-  - "stable"
-
+- stable
 services:
-  - mongodb
-  - neo4j
-
+- mongodb
+- neo4j
 before_script:
-  - sleep 15
-
+- sleep 15
 after_succes:
-  - npm run coveralls
-
+- npm run coveralls
 deploy:
   provider: heroku
   api_key:
-    secure: process.env.HEROKU_API_KEY
+    secure: TUWRDBjhs8ucA9H+qu7oarqu3jJveWXJZb3jOXcCCzk7a0zFTijfQNqh0CTcIKkjp9XInXEda/BqIgTu00vj2Zq9LtE2rd116t1blZj1ZiQPEBjAQCXjH20GqwiE3wPlpMZMlpKtIrvemuxO9Rr7ejeO9hUoXuUPbw89oG9tl30TyobYcauJacxmBVPTwgFbfAPy0XXpqvT7ao4oT0T+DlZGz6JWrnAhd0gDr+nX49f44afECXIIDXW/ef2BGqGK1+0zmhsz4aFmHg3hR4dM8UzceUJySiw6IsqH8M3ltRGh7gQ9roBQ/uyEth7B7yz5m6yC9wIcQXn9wVuI3XXywQNylHTyX2ZTT1s8cf7/aS5hXVZzpQUrtDW8iyiAktxllVxZvB8q+bBdUJYuAo8uPYVtB/zwszslOIOkgd+heWZy7u8uzGZsGZ2E/j2iGm7zudPM/dUwAQqFVuEUoH8G27Rv4USWQ18Vm51v5/ygHXoEM/+HFgzaA1RriN//bpnC7S0nCbX2e1ieeLJWQczqsJsjrpEd5G1hQQV3MFgsfU/0QKYMwqzn+AxD8Qufbpys+Cu5+96WscoYppWlQakqZKMP6JtJeTvsDincyZqG12lQbOYi/RIqJkCY8TXCWv8w8jRvOaEtxZtQEzTli334E6bGgswq7pz88hgqbHOg368=
   app: sportuniteb3-angular
