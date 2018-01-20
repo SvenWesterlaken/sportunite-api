@@ -1,1 +1,1 @@
-repo_token: NHy393UTx2chVZ4NNZvaAoojIxtzjgu9U
+repo_token: process.env.COVERALLS_TOKEN
